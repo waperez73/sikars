@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sikars — Build Your Custom Cigar</title>
+  <style>
+    :root{ --bg:#f9f5f0; --card:#ffffff; --ink:#1f1a17; --muted:#8b7a6b; --brand:#6a4f3a; --brand-soft:#8a6a52; --danger:#b00020; }
+    *{box-sizing:border-box}
+    html,body{margin:0}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; background:var(--bg); color:var(--ink); line-height:1.4}
+    header{padding:20px 16px 8px; text-align:center}
+    header h1{font-family:Georgia,serif; margin:0 0 6px; font-size:1.6rem}
+    header p{margin:0; color:var(--muted); font-size:.95rem}
+
+    /* Progress bar */
+    .progress-wrap{max-width:980px;margin:10px auto 0;padding:0 16px}
+    .progress{height:10px;background:#e9ded4;border-radius:999px;overflow:hidden;border:1px solid rgba(0,0,0,.06)}
+    .progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--brand),var(--brand-soft));transition:width .3s ease;border-radius:999px}
+    .progress-meta{display:flex;justify-content:space-between;align-items:center;margin-top:6px;color:var(--muted);font-size:.9rem}
+
+    /* Step dots */
+    .stepper{max-width:980px;margin:8px auto 0;padding:0 16px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+    .dot{width:18px;height:18px;border-radius:50%;border:2px solid var(--brand);background:#fff;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:.75rem;user-select:none}
+    .dot.active{background:var(--brand);color:#fff}
+    .dot:focus{outline:2px dashed var(--brand-soft);outline-offset:3px}
+
+    .container{max-width:980px; margin:0 auto; padding:12px 16px 80px}
+    .section{margin:16px 0}
+    .section h2{font-size:1.05rem; margin:12px 2px}
+    .grid{display:grid; gap:10px; grid-template-columns:1fr 1fr}
+    @media (min-width:640px){ .grid{grid-template-columns:repeat(3,1fr)} }
+    .card{background:var(--card); border-radius:14px; padding:12px; box-shadow:0 1px 2px rgba(0,0,0,.04); border:1px solid rgba(0,0,0,.06); transition:transform .15s, box-shadow .15s; text-align:center}
+    .card:hover{ transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,.08) }
+    .choice{display:flex; gap:10px; align-items:center; justify-content:center}
+    .choice input{appearance:none; width:18px; height:18px; border-radius:50%; border:2px solid var(--brand); cursor:pointer}
+    .choice input:checked{background:var(--brand)}
+    .thumb{width:100%; max-width:150px; /*aspect-ratio:4/3;*/ border-radius:10px; object-fit:cover; background:#eee; margin:8px auto; border:1px solid rgba(0,0,0,.06)}
+    .muted{color:var(--muted); font-size:.9rem}
+    .pill{display:inline-block; padding:6px 10px; border-radius:20px; background:#fff; border:1px solid rgba(106,79,58,.25); font-size:.8rem; color:var(--brand)}
+    .panel{background:var(--card); border-radius:16px; padding:14px; border:1px solid rgba(0,0,0,.06)}
+    .summary{position:sticky; bottom:0; background:rgba(249,245,240,.9); backdrop-filter:blur(6px); border-top:1px solid rgba(0,0,0,.08); padding:12px 16px; display:flex; gap:12px; align-items:center; justify-content:space-between}
+    .price{font-weight:700; font-size:1.1rem}
+    .btn{background:var(--brand); color:#fff; border:none; border-radius:12px; padding:12px 16px; font-weight:600; cursor:pointer}
+    .btn:active{transform:translateY(1px)}
+    .btn-secondary{background:#d8c7b8; color:#3a2a1d}
+    .btn[disabled]{opacity:.6; cursor:not-allowed}
+    .row{display:grid; gap:10px; grid-template-columns:1fr}
+    @media (min-width:768px){ .row{grid-template-columns:2fr 1fr} }
+    .list{margin:0; padding-left:18px}
+    .hint{font-size:.82rem; color:var(--muted)}
+    .divider{height:1px; background:rgba(0,0,0,.08); margin:14px 0}
+
+    /* Quantity selector */
+    .qty-wrap{display:flex; align-items:center; justify-content:space-between; gap:10px; margin:8px 0 0}
+    .qty-label{font-weight:600}
+    .qty-selector{display:flex; align-items:center; gap:8px}
+    .qty-btn{width:28px; height:28px; border-radius:50%; background:var(--brand); color:#fff; border:none; cursor:pointer; font-size:1rem; line-height:1}
+    .qty-input{width:60px; text-align:center; padding:6px; border:1px solid #ccc; border-radius:6px}
+
+ /* Wizard */
+.step{display:none; min-height:480px;}
+@media (max-width:480px){ .step{ min-height:440px; } }
+.step.active{display:block}
+/* keep your existing .nav-controls line as-is */
+
+    /* Engraving validation */
+    .counter{font-size:.85rem; color:var(--muted); margin-top:6px}
+    .error{color:var(--danger); font-size:.9rem; margin-top:6px}
+    input.error{border-color:var(--danger)}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Build Your Custom Cigar Box</h1>
+    <p>Select size, binder, flavor, box, band. Instant preview and estimated price.</p>
+  </header>
+
+  <!-- Progress bar -->
+  <div class="progress-wrap">
+    <div class="progress"><div id="progressBar" class="progress-bar"></div></div>
+    <div class="progress-meta"><span id="progressLabel">Step 1 of 7</span><span id="progressTitle">Size</span></div>
+  </div>
+
+  <!-- Clickable step dots -->
+  <div class="stepper" role="tablist" aria-label="Build steps">
+    <button class="dot" data-step="1" aria-label="Go to Size" aria-selected="true">1</button>
+    <button class="dot" data-step="2" aria-label="Go to Binder">2</button>
+    <button class="dot" data-step="3" aria-label="Go to Flavor">3</button>
+    <button class="dot" data-step="4" aria-label="Go to Band">4</button>            
+    <button class="dot" data-step="5" aria-label="Go to Box">5</button>    
+    <button class="dot" data-step="6" aria-label="Go to Engraving & Band">6</button>
+    <button class="dot" data-step="7" aria-label="Preview">7</button>
+  </div>
+
+  <main class="container">
+    <form id="builder" class="row" onsubmit="event.preventDefault(); proceedToPayment();">
+      <section>
+        <!-- Step 1: Size -->
+        <div class="section step active" data-step="1" data-title="Size">
+          <h2>Cigar Size</h2>
+          <p class="hint">Choose your cigar size.</p>          
+          <div class="grid">
+            <label class="card">
+              <img class="thumb" src="images/robusto.png" alt="Robusto cigar"/>
+              <div class="choice">
+                <input type="radio" name="size" value="robusto" data-price="10" />
+                <div><strong>Robusto</strong> <span class="pill">54x5</span><div class="muted">Balanced classic.</div></div>
+              </div>
+            </label>
+            <label class="card">
+              <img class="thumb" src="images/gordo.png" alt="Gordo cigar" />
+              <div class="choice">
+                <input type="radio" name="size" value="gordo" data-price="12" />
+                <div><strong>Gordo</strong> <span class="pill">60x6</span><div class="muted">Cooler draw, longer flavor.</div></div>
+              </div>
+            </label>
+            <label class="card">
+              <img class="thumb" src="images/churchill.png" alt="Churchill cigar" />
+              <div class="choice">
+                <input type="radio" name="size" value="churchill" data-price="14" />
+                <div><strong>Churchill</strong> <span class="pill">54x7</span><div class="muted">Long, elegant session.</div></div>
+              </div>
+            </label>
+            <label class="card">
+              <img class="thumb" src="images/belicoso.png" alt="Belicoso cigar" style="height: 1.6em;"/>
+              <div class="choice">
+                <input type="radio" name="size" value="belicoso" data-price="14" />
+                <div><strong>Belicoso</strong> <span class="pill">50x7</span><div class="muted">Leather, pepper, chocolate.</div></div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Step 2: Binder -->
+        <div class="section step" data-step="2" data-title="Binder">
+          <h2>Binder</h2>
+          <p class="hint">Select your preferred binder leaf.</p>
+          <div class="grid">
+            <label class="card">
+              <div class="choice">
+                <input type="radio" name="binder" value="habano" data-price="0" />
+                <div><strong>Habano</strong><div class="muted">Classic strength & spice.</div></div>
+              </div>
+            </label>
+            <label class="card">
+              <div class="choice">
+                <input type="radio" name="binder" value="maduro" data-price="1" />
+                <div><strong>Maduro</strong><div class="muted">Richer body, darker hue.</div></div>
+              </div>
+            </label>
+            <label class="card">
+              <div class="choice">
+                <input type="radio" name="binder" value="connecticut" data-price="0.5" />
+                <div><strong>Connecticut</strong><div class="muted">Smooth, creamy profile.</div></div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Step 3: Flavor -->
+        <div class="section step" data-step="3" data-title="Flavor">
+          <h2>Flavor Profile</h2>
+          <p class="hint">Choose a dominant note for your blend.</p>
+          <div class="grid">
+            <label class="card">
+              <!-- <img class="thumb" src="images/flavor-natural.jpg" alt="Light flavor" /> -->
+              <div class="choice">
+                <input type="radio" name="flavor" value="light" data-price="0" />
+                <div><strong>Light</strong><div class="muted">Classic, balanced.</div></div>
+              </div>
+            </label>
+            <label class="card">
+              <!-- <img class="thumb" src="images/flavor-maduro.jpg" alt="Medium flavor" /> -->
+              <div class="choice">
+                <input type="radio" name="flavor" value="medium" data-price="2" />
+                <div><strong>Medium</strong><div class="muted">Cocoa, molasses.</div></div>
+              </div>
+            </label>
+            <label class="card">
+              <!-- <img class="thumb" src="images/flavor-habano.jpg" alt="Strong flavor" /> -->
+              <div class="choice">
+                <input type="radio" name="flavor" value="strong" data-price="2" />
+                <div><strong>Strong</strong><div class="muted">Spice, leather.</div></div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Step 4: Band -->
+        <div class="section step" data-step="4" data-title="Bands">
+          <h2>Band Style</h2>
+          <p class="hint">Choose your band style.</p>          
+          <div class="grid">
+            <label class="card">
+              <img class="thumb" src="images/beveled.png" alt="Beveled"/>
+              <div class="choice">
+                <input type="radio" name="bandstyle" value="beveled" data-price="2" />
+                <div><strong>Beveled</strong><div class="muted">Elegant Flair</div></div>
+              </div>
+            </label>
+            <label class="card">
+              <img class="thumb" src="images/round_square2.png" alt="Round" />
+              <div class="choice">
+                <input type="radio" name="bandstyle" value="round" data-price="2" />
+                <div><strong>Round</strong><div class="muted">Bold Accent</div></div>
+              </div>
+            </label>
+            <label class="card">
+              <img class="thumb" src="images/dome2.png" alt="Dome" />
+              <div class="choice">
+                <input type="radio" name="bandstyle" value="dome" data-price="2" />
+                <div><strong>Dome</strong><div class="muted">Crown Form</div></div>
+              </div>
+            </label>
+            <label class="card">
+              <img class="thumb" src="images/square.png" alt="Straight" />
+              <div class="choice">
+                <input type="radio" name="bandstyle" value="square" data-price="2" />
+                <div><strong>Straight</strong><div class="muted">Clean Look</div></div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Step 5: Box -->
+        <div class="section step" data-step="5" data-title="Box">
+          <h2>Box Style</h2>
+          <p class="hint">Choose the box color and style.</p>          
+          <div class="grid">
+            <label class="card">
+              <img class="thumb" src="images/box-classic.png" alt="Classic cigar box" />
+              <div class="choice">
+                <input type="radio" name="box" value="classic" data-price="20" />
+                <div><strong>Classic</strong><div class="muted">Natural wood, gold hinges.</div></div>
+              </div>
+            </label>
+            <label class="card">
+              <img class="thumb" src="images/box-rustic.png" alt="Rustic cigar box" />
+              <div class="choice">
+                <input type="radio" name="box" value="rustic" data-price="18" />
+                <div><strong>Rustic</strong><div class="muted">Vintage texture with cedar.</div></div>
+              </div>
+            </label>
+            <label class="card">
+              <img class="thumb" src="images/box-modern.png" alt="Modern cigar box" />
+              <div class="choice">
+                <input type="radio" name="box" value="modern" data-price="24" />
+                <div><strong>Modern</strong><div class="muted">High‑gloss, magnetic latch.</div></div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Step 6: Engraving/Band -->
+        <div class="section step" data-step="6" data-title="Engraving & Band">
+          <h2>Engraving & Band (optional)</h2>
+          <p class="hint">Now make it your own.</p>                    
+          <div class="panel">
+            <label for="engraving">Box Engraving</label>
+            <input id="engraving" name="engraving" type="text" placeholder="Initials or phrase (max 20)" maxlength="20" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px" />
+            <div class="counter"><span id="engraveCount">0</span>/20</div>
+            <div id="engraveError" class="error" style="display:none">Engraving must be 20 characters or fewer.</div>
+            <div class="hint" style="margin-top:6px">Applied on wood; serif/sans fonts, gold or silver foil available.</div>
+            <div style="height:10px"></div>
+            <label for="bandText">Band Text</label>
+            <input id="bandText" name="bandText" type="text" placeholder="Your brand or initials" maxlength="18" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px" />
+          </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="section step" data-step="7" data-title="Preview">
+          <h2>Preview</h2>
+          <p class="hint">Preview your box and cigar</p>                    
+          <div class="panel">
+            <label for="engraving">Preview</label>
+            <button class="btn" type="button" onclick="requestPreview()">Preview My Box</button>
+            <div id="previewArea" style="margin-top:16px; text-align:center;">
+              <p class="muted">Your preview will appear here.</p>
+              <img id="previewImage" style="max-width:100%; border-radius:12px; display:none;" />
+            </div>                      
+          </div>
+        </div>
+
+        <div class="nav-controls">
+          <button type="button" id="prevBtn" class="btn btn-secondary">Previous</button>
+          <button type="button" id="nextBtn" class="btn">Next</button>
+        </div>
+      </section>
+      <aside class="section">
+        <div class="panel">
+          <h2>Summary</h2>
+          <ul class="list" id="summaryList" aria-live="polite"></ul>
+          <div class="divider"></div>
+          
+          <div class="qty-wrap">
+            <span class="qty-label">Quantity</span>
+            <div class="qty-selector">
+              <button type="button" class="qty-btn" onclick="changeQty(-1)" aria-label="Decrease quantity">-</button>
+              <input type="number" id="quantity" name="quantity" value="1" min="1" class="qty-input" onchange="updateSummary()"/>
+              <button type="button" class="qty-btn" onclick="changeQty(1)" aria-label="Increase quantity">+</button>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="muted">Estimated price (mock):</div>
+          <div class="price" id="price">$0.00</div>
+          <div class="divider"></div>
+          <label class="choice">
+            <input type="checkbox" id="age21" /> <span>I confirm I am 21+ years old.</span>
+          </label>
+          <button class="btn" id="checkoutBtn" disabled type="submit">Proceed to Payment</button>
+          <p class="hint" style="margin-top:8px">* Payment will redirect to a secure hosted checkout (Authorize.Net or Square).</p>
+        </div>
+      </aside>
+    </form>
+  </main>
+
+  <div class="summary" id="footerBar" aria-live="polite">
+    <span class="muted">Selections saved</span>
+    <span class="price" id="footerPrice">$0.00</span>
+  </div>
+
+   <script>
+    const BASE = 30;
+    const totalSteps = 7;
+    let currentStep = 1;
+
+    function getSelected(name){ return document.querySelector(`input[name="${name}"]:checked`); }
+    function money(n){ return `$${n.toFixed(2)}` }
+    function calcPrice(){
+      const size = getSelected('size');
+      const box  = getSelected('box');
+      const binder = getSelected('binder');
+      const flavor = getSelected('flavor');
+      const bandStyle = getSelected('bandstyle');
+      const qty = parseInt(document.getElementById('quantity').value) || 1;
+      const extras = Number(size?.dataset.price||0)+Number(box?.dataset.price||0)+Number(binder?.dataset.price||0)+Number(flavor?.dataset.price||0)+(Number(bandStyle?.dataset.price || 0));
+      return (BASE + extras) * qty;
+    }
+    function capitalize(s){ return s ? s.charAt(0).toUpperCase()+s.slice(1) : s }
+    function escapeHTML(str){ return (str||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m])) }
+    function changeQty(delta){
+      const qtyInput = document.getElementById('quantity');
+      let val = parseInt(qtyInput.value) || 1;
+      val = Math.max(1, val + delta);
+      qtyInput.value = val;
+      updateSummary();
+    }
+
+    function updateSummary(){
+      console.log("update summary");
+      const size = getSelected('size')?.value ?? '-';
+      const box = getSelected('box')?.value ?? '-';
+      const binder = getSelected('binder')?.value ?? '-';
+      const flavor = getSelected('flavor')?.value ?? '-';
+      const bandStyle = getSelected('bandstyle')?.value ?? '-';
+      const engraving = document.getElementById('engraving')?.value || '—';
+      const bandText = document.getElementById('bandText')?.value || '—';
+      document.getElementById('summaryList').innerHTML = `
+        <li><strong>Size:</strong> ${capitalize(size)}</li>
+        <li><strong>Binder:</strong> ${capitalize(binder)}</li>
+        <li><strong>Flavor:</strong> ${capitalize(flavor)}</li>
+        <li><strong>Band Style:</strong> ${capitalize(bandStyle)}</li>
+        <li><strong>Box:</strong> ${capitalize(box)}</li>
+        <li><strong>Band Text:</strong> ${escapeHTML(bandText)}</li>        
+        <li><strong>Engraving:</strong> ${escapeHTML(engraving)}</li>
+      `;
+      const price = calcPrice();
+      document.getElementById('price').textContent = money(price);
+      document.getElementById('footerPrice').textContent = money(price);
+      document.getElementById('checkoutBtn').disabled = !document.getElementById('age21').checked;
+  } 
+
+function computeAndLockStepHeights(){
+  const steps = Array.from(document.querySelectorAll('.step'));
+  if(!steps.length) return;
+  const active = document.querySelector('.step.active');
+
+  // temporarily show all to measure tallest
+  steps.forEach(s => s.classList.add('active'));
+  const maxH = Math.max(...steps.map(s => s.offsetHeight));
+  steps.forEach(s => { s.style.minHeight = maxH + 'px'; });
+
+  // restore only the active
+  steps.forEach(s => s.classList.toggle('active', s === active));
+}
+
+window.addEventListener('load', computeAndLockStepHeights);
+window.addEventListener('resize', ()=>{
+  clearTimeout(window.__hlock);
+  window.__hlock = setTimeout(computeAndLockStepHeights, 120);
+});
+
+    function setDots(){
+      document.querySelectorAll('.dot').forEach(d=>{
+        const step = Number(d.dataset.step);
+        d.classList.toggle('active', step === currentStep);
+        d.setAttribute('aria-selected', step === currentStep ? 'true' : 'false');
+      });
+    }
+
+    function showStep(step){
+      currentStep = Math.max(1, Math.min(totalSteps, step));
+      document.querySelectorAll('.step').forEach(el=>{
+        const s = Number(el.dataset.step);
+        el.classList.toggle('active', s === currentStep);
+      });
+      // Progress visuals
+      const percent = (currentStep-1)/(totalSteps-1)*100;
+      document.getElementById('progressBar').style.width = percent + '%';
+      const active = document.querySelector(`.step[data-step="${currentStep}"]`);
+      document.getElementById('progressLabel').textContent = `Step ${currentStep} of ${totalSteps}`;
+      document.getElementById('progressTitle').textContent = active?.dataset.title || '';
+      setDots();
+      // Buttons
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      prevBtn.disabled = currentStep === 1;
+      nextBtn.textContent = currentStep === totalSteps ? 'Review & Pay' : 'Next';
+    }
+
+    // Clickable dots (skippable)
+    document.addEventListener('click', (e)=>{
+      const dot = e.target.closest('.dot');
+      if(dot){
+        const target = Number(dot.dataset.step);
+        showStep(target);
+      }
+      if(e.target.id === 'prevBtn'){ showStep(currentStep - 1); }
+      if(e.target.id === 'nextBtn'){
+        if(currentStep === totalSteps){
+          // Final step: ensure engraving valid before focusing payment
+          if(!validateEngraving()) return;
+          document.getElementById('checkoutBtn').focus();
+        } else {
+          // If leaving engraving step, validate
+          if(currentStep === 5 && !validateEngraving()) return;
+          showStep(currentStep + 1);
+        }
+      }
+    });
+
+    // Engraving validation
+    const engraveInput = document.getElementById('engraving');
+    const engraveCount = document.getElementById('engraveCount');
+    const engraveError = document.getElementById('engraveError');
+
+    function validateEngraving(){
+      if(!engraveInput) return true;
+      const len = (engraveInput.value || '').length;
+      const ok = len <= 20;
+      engraveInput.classList.toggle('error', !ok);
+      engraveError.style.display = ok ? 'none' : 'block';
+      return ok;
+    }
+
+    function updateEngraveCounter(){
+      if(!engraveCount || !engraveInput) return;
+      engraveCount.textContent = String((engraveInput.value || '').length);
+      validateEngraving();
+    }
+
+    if(engraveInput){
+      engraveInput.addEventListener('input', ()=>{ updateEngraveCounter(); updateSummary(); });
+      engraveInput.addEventListener('blur', validateEngraving);
+      updateEngraveCounter();
+    }
+
+    // Wire inputs to summary updates
+    ['size','box','binder','flavor','bandstyle'].forEach(group=>{
+      document.querySelectorAll(`input[name="${group}"]`).forEach(el=>el.addEventListener('change', updateSummary));
+    });
+    ['bandText','age21','quantity'].forEach(id=>{
+      document.getElementById(id)?.addEventListener('input', updateSummary);
+      document.getElementById(id)?.addEventListener('change', updateSummary);
+    });
+
+    // Init
+    updateSummary();
+    showStep(1);
+    
+    sessionStorage.setItem('sikar-order', JSON.stringify(order));
+    
+    async function payWithAuthorizeNet(order){
+      try{
+        const res = await fetch('/api/anet/create-session', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(order) });
+        if(!res.ok) throw new Error('Failed to create Authorize.Net session');
+        const data = await res.json();
+        if(data.url){ window.location.href = data.url; }
+        else { alert('Authorize.Net session missing URL. Check your backend.'); }
+      }catch(err){ console.error(err); alert('Payment error: '+ err.message); }
+    }
+    const SQUARE_CHECKOUT_LINK = '';
+    function payWithSquare(){ if(!SQUARE_CHECKOUT_LINK){ alert('Square link not set.'); return; } window.location.href = SQUARE_CHECKOUT_LINK; }
+    function buildOrder(){
+      return {
+        size: getSelected('size')?.value,
+        box: getSelected('box')?.value,
+        binder: getSelected('binder')?.value,
+        flavor: getSelected('flavor')?.value,
+        bandStyle: getSelected('bandstyle')?.value,
+        engraving: document.getElementById('engraving')?.value,
+        bandText: document.getElementById('bandText')?.value,
+        quantity: parseInt(document.getElementById('quantity').value) || 1,
+        price: calcPrice(), currency:'USD'
+      };
+    }
+
+    function buildBoxPrompt(){
+      return {
+        quantity: 20,
+        size: getSelected('size')?.value,
+        box: getSelected('box')?.value,
+        binder: getSelected('binder')?.value,
+        flavor: getSelected('flavor')?.value,
+        bandStyle: getSelected('bandstyle')?.value,
+        engraving: document.getElementById('engraving')?.value,
+        bandText: document.getElementById('bandText')?.value,
+      };
+    }
+
+    async function proceedToPayment(){
+      if(!document.getElementById('age21').checked){ alert('Please confirm you are 21+.'); return; }
+      if(!validateEngraving()) { showStep(5); return; }
+      const order = buildOrder();
+      await payWithAuthorizeNet(order);
+    }
+
+    /*preview your selections */    
+    async function requestPreview(){
+      console.log("preview my box");
+
+      const order = buildBoxPrompt(); // uses your existing order builder
+      
+      console.log(order);
+
+      document.getElementById('previewArea').innerHTML = "<p>Generating preview...</p>";
+
+      try {
+        const res = await fetch('http://localhost:5000/api/render-preview', {
+          method: 'POST',
+          headers: { 'Content-Type':'application/json' },
+          body: JSON.stringify(order)
+        });
+        if(!res.ok) throw new Error("Preview request failed");
+        const data = await res.json();
+        if(data.url){
+          const img = document.getElementById("previewImage");
+          img.src = data.url;
+          console.log(data.url)
+          img.style.display = "block";
+          document.getElementById('previewArea').innerHTML = "";
+          document.getElementById('previewArea').appendChild(img);
+        }
+      } catch(err){
+        document.getElementById('previewArea').innerHTML = `<p style="color:red">${err.message}</p>`;
+      }
+    }
+  </script>
+</body>
+</html>
