@@ -1,13 +1,14 @@
 {
-  "name": "sikars-client",
+  "name": "sikars-app",
   "version": "1.0.0",
   "description": "Sikars Custom Cigar Builder Mobile App",
   "private": true,
   "dependencies": {
-    "lucide-react": "^0.546.0",
+    "lucide-react": "^0.263.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-scripts": "^5.0.1"
+    "react-router-dom": "^6.30.1",
+    "react-scripts": "5.0.1"
   },
   "scripts": {
     "start": "react-scripts start",
