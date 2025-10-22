@@ -1,8 +1,81 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Menu, X, Package, Sparkles, CheckCircle, Users, Award } from 'lucide-react';
+
+import enTranslations from './languages/landing-en';
+import esTranslations from './languages/landing-es';
+
+const TRANSLATIONS = { en: enTranslations, es: esTranslations };
 
 function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Get language from URL or default to English
+  const getLanguageFromURL = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const lang = urlParams.get('lang');
+    return (lang === 'es' || lang === 'es') ? 'es' : 'en';
+  };
+
+  const [language, setLanguage] = useState(getLanguageFromURL());
+  const t = TRANSLATIONS[language];
+
+  const changeLanguage = (newLang) => {
+    setLanguage(newLang);
+    const url = new URL(window.location);
+    url.searchParams.set('lang', newLang);
+    window.history.pushState({}, '', url);
+  };
+
+  /* const scrollToSection = (id) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+      setMobileMenuOpen(false);
+    }
+  }; */
+
+  useEffect(() => {
+    const handleURLChange = () => {
+      setLanguage(getLanguageFromURL());
+    };
+    window.addEventListener('popstate', handleURLChange);
+    return () => window.removeEventListener('popstate', handleURLChange);
+  }, []);
+
+  useEffect(() => {
+    // Load Splide CSS
+    const splideCSS = document.createElement('link');
+    splideCSS.rel = 'stylesheet';
+    splideCSS.href = 'https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css';
+    document.head.appendChild(splideCSS);
+
+    // Load Splide JS
+    const splideJS = document.createElement('script');
+    splideJS.src = 'https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js';
+    splideJS.async = true;
+    splideJS.onload = () => {
+      if (window.Splide) {
+        new window.Splide('#image-carousel', {
+          type: 'loop',
+          perPage: 1,
+          autoplay: true,
+          interval: 5000,
+          pauseOnHover: true,
+          pauseOnFocus: true,
+          arrows: true,
+          pagination: true,
+          speed: 800,
+          easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+        }).mount();
+      }
+    };
+    document.body.appendChild(splideJS);
+
+    return () => {
+      document.head.removeChild(splideCSS);
+      document.body.removeChild(splideJS);
+    };
+  }, []);
 
   const scrollToSection = (id) => {
     const element = document.getElementById(id);
@@ -54,20 +127,57 @@ function LandingPage() {
           className="desktop-menu">
             <a href="#home" onClick={(e) => { e.preventDefault(); scrollToSection('home'); }} 
                style={{ color: 'white', textDecoration: 'none', fontWeight: '500', cursor: 'pointer' }}>
-              Home
+              {t.home}
             </a>
             <a href="#features" onClick={(e) => { e.preventDefault(); scrollToSection('features'); }} 
                style={{ color: 'white', textDecoration: 'none', fontWeight: '500', cursor: 'pointer' }}>
-              Features
+              {t.features}
             </a>
             <a href="#how-it-works" onClick={(e) => { e.preventDefault(); scrollToSection('how-it-works'); }} 
                style={{ color: 'white', textDecoration: 'none', fontWeight: '500', cursor: 'pointer' }}>
-              How It Works
+              {t.howItWorks}
             </a>
             <a href="#about" onClick={(e) => { e.preventDefault(); scrollToSection('about'); }} 
                style={{ color: 'white', textDecoration: 'none', fontWeight: '500', cursor: 'pointer' }}>
-              About
+              {t.about}
             </a>
+            
+            {/* Language Switcher */}
+            <div style={{ display: 'flex', gap: '4px' }}>
+              <button
+                onClick={() => changeLanguage('en')}
+                style={{
+                  padding: '4px 10px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  background: language === 'en' ? '#d4af37' : 'rgba(255,255,255,0.2)',
+                  color: language === 'en' ? '#1f1a17' : 'white',
+                  fontSize: '11px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                EN
+              </button>
+              <button
+                onClick={() => changeLanguage('es')}
+                style={{
+                  padding: '4px 10px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  background: language === 'es' ? '#d4af37' : 'rgba(255,255,255,0.2)',
+                  color: language === 'es' ? '#1f1a17' : 'white',
+                  fontSize: '11px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                ES
+              </button>
+            </div>
+            
             <a href="/login" 
                style={{
                  padding: '8px 20px',
@@ -78,7 +188,7 @@ function LandingPage() {
                  fontWeight: '600',
                  transition: 'transform 0.2s'
                }}>
-              Login
+              {t.login}
             </a>
           </div>
 
@@ -109,20 +219,57 @@ function LandingPage() {
           }}>
             <a href="#home" onClick={(e) => { e.preventDefault(); scrollToSection('home'); }} 
                style={{ color: 'white', textDecoration: 'none', padding: '12px', fontWeight: '500' }}>
-              Home
+              {t.home}
             </a>
             <a href="#features" onClick={(e) => { e.preventDefault(); scrollToSection('features'); }} 
                style={{ color: 'white', textDecoration: 'none', padding: '12px', fontWeight: '500' }}>
-              Features
+              {t.features}
             </a>
             <a href="#how-it-works" onClick={(e) => { e.preventDefault(); scrollToSection('how-it-works'); }} 
                style={{ color: 'white', textDecoration: 'none', padding: '12px', fontWeight: '500' }}>
-              How It Works
+              {t.howItWorks}
             </a>
             <a href="#about" onClick={(e) => { e.preventDefault(); scrollToSection('about'); }} 
                style={{ color: 'white', textDecoration: 'none', padding: '12px', fontWeight: '500' }}>
-              About
+              {t.about}
             </a>
+            
+            {/* Language Switcher - Mobile */}
+            <div style={{ display: 'flex', gap: '8px', padding: '12px 0' }}>
+              <button
+                onClick={() => changeLanguage('en')}
+                style={{
+                  flex: 1,
+                  padding: '10px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: language === 'en' ? '#d4af37' : 'rgba(255,255,255,0.2)',
+                  color: language === 'en' ? '#1f1a17' : 'white',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                English
+              </button>
+              <button
+                onClick={() => changeLanguage('es')}
+                style={{
+                  flex: 1,
+                  padding: '10px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: language === 'es' ? '#d4af37' : 'rgba(255,255,255,0.2)',
+                  color: language === 'es' ? '#1f1a17' : 'white',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                Español
+              </button>
+            </div>
+            
             <a href="/login" 
                style={{
                  padding: '12px',
@@ -133,7 +280,7 @@ function LandingPage() {
                  fontWeight: '600',
                  textAlign: 'center'
                }}>
-              Login
+              {t.login}
             </a>
           </div>
         )}
@@ -146,6 +293,52 @@ function LandingPage() {
         padding: '60px 16px',
         textAlign: 'center'
       }}>
+        {/* Image Carousel */}
+        <div id="image-carousel" className="splide" style={{
+          marginBottom: '40px',
+          borderRadius: '24px',
+          overflow: 'hidden',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
+        }}>
+          <div className="splide__track">
+            <ul className="splide__list">
+              <li className="splide__slide">
+                <img 
+                  src="/images/tobacco-field-1.jpg" 
+                  alt={t.imgAlt1}
+                  style={{
+                    width: '100%',
+                    height: '400px',
+                    objectFit: 'cover'
+                  }}
+                />
+              </li>
+              <li className="splide__slide">
+                <img 
+                  src="/images/tobacco-field-2.jpg" 
+                  alt={t.imgAlt2}
+                  style={{
+                    width: '100%',
+                    height: '400px',
+                    objectFit: 'cover'
+                  }}
+                />
+              </li>
+              <li className="splide__slide">
+                <img 
+                  src="/images/tobacco-drying.jpg" 
+                  alt={t.imgAlt3}
+                  style={{
+                    width: '100%',
+                    height: '400px',
+                    objectFit: 'cover'
+                  }}
+                />
+              </li>
+            </ul>
+          </div>
+        </div>
+
         <div style={{
           background: 'white',
           borderRadius: '24px',
@@ -160,7 +353,7 @@ function LandingPage() {
             margin: '0 0 16px 0',
             lineHeight: '1.2'
           }}>
-            Build Your Perfect<br />Custom Cigar
+            {t.heroTitle}
           </h2>
           <p style={{
             fontSize: '18px',
@@ -170,8 +363,7 @@ function LandingPage() {
             marginLeft: 'auto',
             marginRight: 'auto'
           }}>
-            Create a personalized cigar experience from size to flavor, band to box. 
-            Your signature blend, your way.
+            {t.heroSubtitle}
           </p>
           <a href="/builder" style={{
             display: 'inline-flex',
@@ -188,7 +380,7 @@ function LandingPage() {
             transition: 'transform 0.2s'
           }}>
             <Sparkles size={24} />
-            Start Building
+            {t.startBuilding}
           </a>
         </div>
       </section>
@@ -206,7 +398,7 @@ function LandingPage() {
           textAlign: 'center',
           margin: '0 0 40px 0'
         }}>
-          Why Choose Sikars?
+          {t.whyChoose}
         </h2>
         <div style={{
           display: 'grid',
@@ -234,10 +426,10 @@ function LandingPage() {
               <Sparkles size={24} color="white" />
             </div>
             <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#1f1a17', margin: '0 0 8px 0' }}>
-              Fully Customizable
+              {t.fullyCustomizable}
             </h3>
             <p style={{ color: '#8b7a6b', margin: 0, lineHeight: '1.6' }}>
-              Choose every detail from size, binder, flavor profile, to personalized engraving and band design.
+              {t.fullyCustomizableDesc}
             </p>
           </div>
 
@@ -261,10 +453,10 @@ function LandingPage() {
               <CheckCircle size={24} color="white" />
             </div>
             <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#1f1a17', margin: '0 0 8px 0' }}>
-              Premium Quality
+              {t.premiumQuality}
             </h3>
             <p style={{ color: '#8b7a6b', margin: 0, lineHeight: '1.6' }}>
-              Hand-selected tobacco leaves and expert craftsmanship ensure every cigar meets the highest standards.
+              {t.premiumQualityDesc}
             </p>
           </div>
 
@@ -288,10 +480,10 @@ function LandingPage() {
               <Package size={24} color="white" />
             </div>
             <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#1f1a17', margin: '0 0 8px 0' }}>
-              Elegant Packaging
+              {t.elegantPackaging}
             </h3>
             <p style={{ color: '#8b7a6b', margin: 0, lineHeight: '1.6' }}>
-              Choose from classic, rustic, or modern boxes. Add custom engraving for a truly personal touch.
+              {t.elegantPackagingDesc}
             </p>
           </div>
         </div>
@@ -314,7 +506,7 @@ function LandingPage() {
           textAlign: 'center',
           margin: '0 0 40px 0'
         }}>
-          How It Works
+          {t.howItWorksTitle}
         </h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
           <div style={{ display: 'flex', gap: '16px', alignItems: 'start' }}>
@@ -335,10 +527,10 @@ function LandingPage() {
             </div>
             <div>
               <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#1f1a17', margin: '0 0 8px 0' }}>
-                Build Your Cigar
+                {t.step1Title}
               </h3>
               <p style={{ color: '#8b7a6b', margin: 0, lineHeight: '1.6' }}>
-                Select size, binder, flavor profile, and band style to create your perfect smoke.
+                {t.step1Desc}
               </p>
             </div>
           </div>
@@ -361,10 +553,10 @@ function LandingPage() {
             </div>
             <div>
               <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#1f1a17', margin: '0 0 8px 0' }}>
-                Choose Your Box
+                {t.step2Title}
               </h3>
               <p style={{ color: '#8b7a6b', margin: 0, lineHeight: '1.6' }}>
-                Pick from classic wooden, rustic cedar, or modern high-gloss box designs.
+                {t.step2Desc}
               </p>
             </div>
           </div>
@@ -387,10 +579,10 @@ function LandingPage() {
             </div>
             <div>
               <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#1f1a17', margin: '0 0 8px 0' }}>
-                Personalize
+                {t.step3Title}
               </h3>
               <p style={{ color: '#8b7a6b', margin: 0, lineHeight: '1.6' }}>
-                Add custom engraving and band text to make it uniquely yours.
+                {t.step3Desc}
               </p>
             </div>
           </div>
@@ -413,10 +605,10 @@ function LandingPage() {
             </div>
             <div>
               <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#1f1a17', margin: '0 0 8px 0' }}>
-                Preview & Order
+                {t.step4Title}
               </h3>
               <p style={{ color: '#8b7a6b', margin: 0, lineHeight: '1.6' }}>
-                Review your custom design and complete your secure checkout.
+                {t.step4Desc}
               </p>
             </div>
           </div>
@@ -436,7 +628,7 @@ function LandingPage() {
             fontWeight: '600',
             transition: 'transform 0.2s'
           }}>
-            Get Started Now
+            {t.getStartedNow}
           </a>
         </div>
       </section>
@@ -460,7 +652,7 @@ function LandingPage() {
             color: '#6a4f3a',
             margin: '0 0 16px 0'
           }}>
-            About Sikars
+            {t.aboutTitle}
           </h2>
           <p style={{
             fontSize: '18px',
@@ -469,24 +661,20 @@ function LandingPage() {
             maxWidth: '800px',
             margin: '0 auto 32px'
           }}>
-            At Sikars, we believe every cigar should be as unique as the person enjoying it. 
-            Our custom cigar builder puts you in control, allowing you to craft the perfect smoke 
-            from premium tobacco selections to personalized packaging. Whether you're celebrating 
-            a special occasion or creating a signature blend, Sikars delivers quality and 
-            craftsmanship in every puff.
+            {t.aboutDesc}
           </p>
           <div style={{ display: 'flex', gap: '32px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <div>
               <div style={{ fontSize: '32px', fontWeight: '700', color: '#6a4f3a' }}>10k+</div>
-              <div style={{ color: '#8b7a6b', fontSize: '14px' }}>Custom Cigars Made</div>
+              <div style={{ color: '#8b7a6b', fontSize: '14px' }}>{t.customCigarsMade}</div>
             </div>
             <div>
               <div style={{ fontSize: '32px', fontWeight: '700', color: '#6a4f3a' }}>5k+</div>
-              <div style={{ color: '#8b7a6b', fontSize: '14px' }}>Happy Customers</div>
+              <div style={{ color: '#8b7a6b', fontSize: '14px' }}>{t.happyCustomers}</div>
             </div>
             <div>
               <div style={{ fontSize: '32px', fontWeight: '700', color: '#6a4f3a' }}>100%</div>
-              <div style={{ color: '#8b7a6b', fontSize: '14px' }}>Premium Quality</div>
+              <div style={{ color: '#8b7a6b', fontSize: '14px' }}>{t.premiumQualityLabel}</div>
             </div>
           </div>
         </div>
@@ -509,7 +697,7 @@ function LandingPage() {
             <h3 style={{ margin: 0, fontSize: '24px' }}>Sikars</h3>
           </div>
           <p style={{ margin: '0 0 24px 0', opacity: 0.9 }}>
-            Crafting custom cigars since 2024
+            {t.craftingSince}
           </p>
           <div style={{
             display: 'flex',
@@ -518,12 +706,12 @@ function LandingPage() {
             flexWrap: 'wrap',
             fontSize: '14px'
           }}>
-            <a href="/privacy" style={{ color: 'white', textDecoration: 'none' }}>Privacy Policy</a>
-            <a href="/terms" style={{ color: 'white', textDecoration: 'none' }}>Terms of Service</a>
-            <a href="/contact" style={{ color: 'white', textDecoration: 'none' }}>Contact Us</a>
+            <a href="/privacy" style={{ color: 'white', textDecoration: 'none' }}>{t.privacyPolicy}</a>
+            <a href="/terms" style={{ color: 'white', textDecoration: 'none' }}>{t.termsOfService}</a>
+            <a href="/contact" style={{ color: 'white', textDecoration: 'none' }}>{t.contactUs}</a>
           </div>
           <p style={{ margin: '24px 0 0', fontSize: '14px', opacity: 0.7 }}>
-            © 2024 Sikars. All rights reserved.
+            {t.allRightsReserved}
           </p>
         </div>
       </footer>
@@ -539,6 +727,33 @@ function LandingPage() {
           .mobile-menu-btn {
             display: none !important;
           }
+          #image-carousel {
+            height: 500px;
+          }
+          #image-carousel img {
+            height: 500px !important;
+          }
+        }
+        
+        /* Splide Custom Styling */
+        .splide__arrow {
+          background: rgba(106, 79, 58, 0.8) !important;
+          width: 3em !important;
+          height: 3em !important;
+        }
+        .splide__arrow:hover {
+          background: rgba(106, 79, 58, 1) !important;
+        }
+        .splide__pagination__page {
+          background: #d4af37 !important;
+          opacity: 0.5;
+        }
+        .splide__pagination__page.is-active {
+          opacity: 1;
+          transform: scale(1.4);
+        }
+        .splide__slide img {
+          display: block;
         }
       `}</style>
     </div>
