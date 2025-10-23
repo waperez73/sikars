@@ -4,3 +4,7 @@ transformers
 diffusers
 accelerate
 safetensors
+reportlab
+requests
+flask-cors
+qrcode[pil]

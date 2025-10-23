@@ -1,14 +1,22 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from createPdf import pdf_blueprint  # import the blueprint
 import openai, os
 
 app = Flask(__name__)
 CORS(app)  # allow all origins (you can restrict later)
 
+# Register the PDF route
+app.register_blueprint(pdf_blueprint)
+
 # Make sure to set your OpenAI key as env variable
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
+if not openai.api_key:
+    raise ValueError("No OpenAI API key set in environment variables")
+
 @app.route("/api/render-preview", methods=["POST"])
+
 def render_preview():
     data = request.json
     

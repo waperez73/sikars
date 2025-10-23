@@ -2,6 +2,8 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LandingPage from './LandingPage';
 import Builder from './Builder';
+import Signup from './Signup';
+import SubmitPayment from './Submitpayment';
 
 function App() {
   return (
@@ -10,11 +12,12 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/builder" element={<Builder />} />
         <Route path="/login" element={<LoginPlaceholder />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/payment" element={<SubmitPayment />} />
       </Routes>
     </Router>
   );
 }
-
 // Placeholder Login Page - replace with your actual login component
 function LoginPlaceholder() {
   return (
