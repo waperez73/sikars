@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Check, Package, Sparkles } from 'lucide-react';
 import enTranslations from './languages/en';
 import spTranslations from './languages/sp';
@@ -46,6 +47,7 @@ const BASE_PRICE = 30;
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 function Builder() {
+  const navigate = useNavigate();
   const getLanguageFromURL = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const lang = urlParams.get('lang');
@@ -178,12 +180,14 @@ function Builder() {
     }
   };
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
     if (!selections.age21) {
       alert(t.confirmAge);
       return;
     }
 
+    // Navigate to payment page with order data
+    // You can pass the order data via state or store it in context/localStorage
     const orderData = {
       size: selections.size,
       box: selections.box,
@@ -197,30 +201,11 @@ function Builder() {
       currency: 'USD'
     };
 
-    try {
-      const response = await fetch(`${API_URL}/api/anet/create-session`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(orderData)
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create payment session');
-      }
-
-      const data = await response.json();
-      
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error(t.noCheckoutUrl);
-      }
-    } catch (error) {
-      console.error('Checkout error:', error);
-      alert(translate(t.checkoutError, { error: error.message }));
-    }
+    // Store order data in localStorage for the payment page to access
+    localStorage.setItem('orderData', JSON.stringify(orderData));
+    
+    // Navigate to payment page
+    navigate('/payment');
   };
 
   const progress = ((currentStep - 1) / (STEPS.length - 1)) * 100;
