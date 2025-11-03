@@ -399,7 +399,7 @@ function Builder() {
                           fontWeight: '700',
                           color: selections.size === option.value ? '#d4af37' : '#6a4f3a'
                         }}>
-                          +${option.price.toFixed(2)}
+                         {/*+${option.price.toFixed(2)} */}
                         </div>
                       </div>
                       {selections.size === option.value && (
@@ -465,7 +465,7 @@ function Builder() {
                           fontWeight: '700',
                           color: selections.binder === option.value ? '#d4af37' : '#6a4f3a'
                         }}>
-                          +${option.price.toFixed(2)}
+                          {/*+${option.price.toFixed(2)}*/}
                         </div>
                         {selections.binder === option.value && (
                           <Check size={20} color="#d4af37" />
@@ -531,7 +531,7 @@ function Builder() {
                           fontWeight: '700',
                           color: selections.flavor === option.value ? '#d4af37' : '#6a4f3a'
                         }}>
-                          +${option.price.toFixed(2)}
+                          {/*+${option.price.toFixed(2)}*/}
                         </div>
                         {selections.flavor === option.value && (
                           <Check size={20} color="#d4af37" />
@@ -597,7 +597,7 @@ function Builder() {
                           fontWeight: '700',
                           color: selections.bandStyle === option.value ? '#d4af37' : '#6a4f3a'
                         }}>
-                          +${option.price.toFixed(2)}
+                          {/*+${option.price.toFixed(2)}*/}
                         </div>
                       </div>
                       {selections.bandStyle === option.value && (
