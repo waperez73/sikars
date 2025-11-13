@@ -5,7 +5,7 @@ const axios = require('axios');
 
 // Import QR generator - adjust path based on your structure
 // If qrGenerator.js is in the same utils folder, use:
-const createQRCode = require('./qrGenerator.js');
+const { createQRCode } = require('./qrGenerator.js');
 // OR if it's in a different location, adjust accordingly
 
 /**
@@ -84,14 +84,14 @@ const createPDF = async function (data, orderId, pdfPath) {
     
     // Format and display order fields
     const orderDetails = [
-      { label: 'Cigar Size', value: data.size },
-      { label: 'Box Type', value: data.box },
-      { label: 'Binder/Wrapper', value: data.binder },
-      { label: 'Flavor Profile', value: data.flavor },
-      { label: 'Band Style', value: data.bandStyle },
-      { label: 'Band Text', value: data.bandText },
-      { label: 'Box Engraving', value: data.engraving },
-      { label: 'Quantity', value: data.quantity }
+      { label: 'Cigar Size', value: data.details.size },
+      { label: 'Box Type', value: data.details.box },
+      { label: 'Binder/Wrapper', value: data.details.binder },
+      { label: 'Flavor Profile', value: data.details.flavor },
+      { label: 'Band Style', value: data.details.bandStyle },
+      { label: 'Band Text', value: data.details.bandText },
+      { label: 'Box Engraving', value: data.details.engraving },
+      { label: 'Quantity', value: data.details.quantity }
     ];
 
     orderDetails.forEach(detail => {

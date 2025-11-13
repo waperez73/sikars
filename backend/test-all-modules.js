@@ -9,7 +9,7 @@ let allPassed = true;
 // Test 1: QR Generator
 console.log('1. Testing qrGenerator.js...');
 try {
-  const createQRCode = require('./src/utils/qrGenerator');
+  const {createQRCode} = require('./src/utils/qrGenerator');
   if (typeof createQRCode === 'function') {
     console.log('   ✓ QR Generator loaded successfully');
     console.log('   ✓ createQRCode is a function');
