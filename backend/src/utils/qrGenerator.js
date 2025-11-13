@@ -1,5 +1,7 @@
-import QRCode from "qrcode";
+const QRCode = require('qrcode');
 
-export async function createQRCode(text) {
+const createQRCode= async function(text) {
   return await QRCode.toBuffer(text, { width: 256 });
 }
+
+module.exports = { createQRCode };

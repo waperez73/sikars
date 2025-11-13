@@ -1,5 +1,4 @@
 const express = require('express');
-
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
@@ -8,13 +7,15 @@ const rateLimit = require('express-rate-limit');
 const logger = require('./utils/logger');
 const errorHandler = require('./middleware/errorHandler');
 
-// Import routes
+// Import routes - make sure ALL imports are correct
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const previewRoutes = require('./routes/previewRoutes');
+const aiRoutes = require('./routes/aiRoutes');
+const pdfRoutes = require('./routes/pdfRoutes');
 
 const app = express();
 
@@ -66,7 +67,9 @@ app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/payments', paymentRoutes);
-app.use('/api/preview', previewRoutes);
+//app.use('/api/preview', previewRoutes);
+app.use('/api/ai', aiRoutes);
+app.use('/api/pdf', pdfRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -77,6 +80,6 @@ app.use((req, res) => {
 });
 
 // Global error handler (must be last)
-app.use(errorHandler);
+//app.use(errorHandler);
 
 module.exports = app;
