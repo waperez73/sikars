@@ -14,7 +14,7 @@ curl -s "$API_URL/api/products/sizes"
 echo ""
 
 echo "3. Register User:"
-curl -s -X POST "$API_URL/api/auth/register" \
+curl -s -v -X POST "$API_URL/api/auth/register" \
   -H "Content-Type: application/json" \
   -d '{
     "email": "test@example.com",

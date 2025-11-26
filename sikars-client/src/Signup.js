@@ -69,8 +69,9 @@ function Signup() {
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email, // This will be used as username
-        password: formData.password
+        password: formData.password        
       });
+      
       
       // For now, just show an alert
       alert(`Account created successfully!\n\nName: ${formData.firstName} ${formData.lastName}\nEmail/Username: ${formData.email}`);

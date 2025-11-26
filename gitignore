@@ -1,0 +1,319 @@
+# Sikars Project .gitignore
+# Keep environment variables and sensitive data out of version control
+
+# ================================
+# ENVIRONMENT VARIABLES
+# ================================
+# Never commit environment files!
+.env
+.env.*
+!.env.example
+*.env
+*.env.*
+!*.env.example
+
+# Environment-specific files
+.env.local
+.env.development
+.env.staging
+.env.production
+.env.test
+
+# ================================
+# DEPENDENCIES
+# ================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# ================================
+# BUILD OUTPUT
+# ================================
+/build
+/dist
+/.next
+/out
+/.vercel
+/.netlify
+
+# Production build files
+frontend/build/
+backend/dist/
+admin/build/
+
+# ================================
+# LOGS
+# ================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# ================================
+# TESTING
+# ================================
+/coverage
+/.nyc_output
+*.test.js.snap
+.jest/
+
+# ================================
+# IDE & EDITORS
+# ================================
+# VSCode
+.vscode/
+*.code-workspace
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# ================================
+# OPERATING SYSTEM
+# ================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# ================================
+# TEMPORARY FILES
+# ================================
+tmp/
+temp/
+*.tmp
+*.temp
+*.cache
+.cache/
+
+# ================================
+# SECURITY & SECRETS
+# ================================
+# API keys and secrets
+secrets.json
+credentials.json
+serviceAccount.json
+.firebase/
+.gcloud/
+
+# SSL certificates
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx
+
+# SSH keys
+id_rsa
+id_rsa.pub
+*.ppk
+
+# ================================
+# DATABASE
+# ================================
+# Database files
+*.sqlite
+*.sqlite3
+*.db
+*.sql.backup
+
+# Database dumps
+*.dump
+*.bak
+backup_*.sql
+
+# ================================
+# STORAGE & UPLOADS
+# ================================
+uploads/
+public/uploads/
+private/uploads/
+storage/
+
+# Generated files
+generated/
+output/
+
+# ================================
+# FRONTEND SPECIFIC
+# ================================
+# React
+.eslintcache
+*.tsbuildinfo
+
+# Service workers
+sw.js
+workbox-*.js
+
+# PWA
+manifest.json.map
+
+# ================================
+# BACKEND SPECIFIC
+# ================================
+# Compiled files
+*.js.map
+*.d.ts
+
+# ================================
+# DEPLOYMENT
+# ================================
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Kubernetes
+*.kubeconfig
+
+# Terraform
+*.tfstate
+*.tfstate.backup
+.terraform/
+
+# Serverless
+.serverless/
+
+# ================================
+# ANALYTICS & MONITORING
+# ================================
+# Sentry
+.sentryclirc
+
+# New Relic
+newrelic_agent.log
+
+# ================================
+# DOCUMENTATION
+# ================================
+# Generated documentation
+docs/_build/
+site/
+
+# ================================
+# MISC
+# ================================
+# Backup files
+*.bak
+*.backup
+*~
+
+# Archive files
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# System files
+.fuse_hidden*
+.nfs*
+
+# ================================
+# ALLOW SPECIFIC FILES
+# ================================
+# Allow example environment files
+!.env.example
+!frontend/.env.example
+!backend/.env.example
+!admin/.env.example
+
+# Allow example configuration
+!config.example.json
+!secrets.example.json
+
+# ================================
+# PROJECT SPECIFIC IGNORES
+# ================================
+# Sikars custom ignores
+
+# Preview images (generated dynamically)
+public/previews/
+backend/temp-previews/
+
+# PDF invoices (should be in S3, not Git)
+invoices/
+receipts/
+
+# QR codes (generated dynamically)
+qrcodes/
+
+# Order data backups
+order-backups/
+
+# User uploaded images (should be in S3)
+user-uploads/
+
+# Development seeds
+dev-seeds/
+
+# ================================
+# NOTES
+# ================================
+# This .gitignore is comprehensive and covers:
+# - Environment variables and secrets
+# - Dependencies and build outputs
+# - IDE and OS specific files
+# - Temporary and cache files
+# - Security-sensitive files
+# - Database and storage files
+# - Deployment configurations
+#
+# Remember to review this file periodically and
+# update it as your project evolves!
