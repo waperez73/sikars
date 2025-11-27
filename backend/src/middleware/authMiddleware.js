@@ -9,16 +9,10 @@ const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-if (!JWT_SECRET) {
-  console.error('FATAL ERROR: JWT_SECRET is not defined in environment variables');
-  process.exit(1);
-}
-
 /**
  * Verify JWT token from Authorization header
- * Required middleware - blocks requests without valid token
  */
-function authMiddleware(req, res, next) {
+const authMiddleware = (req, res, next) => {
   try {
     // Get token from Authorization header
     const authHeader = req.headers.authorization;
@@ -77,18 +71,18 @@ function authMiddleware(req, res, next) {
   } catch (error) {
     console.error('Auth middleware error:', error);
     
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: 'Authentication error'
     });
   }
-}
+};
 
 /**
  * Optional middleware - allows both authenticated and unauthenticated access
  * Attaches user info if token is valid, but doesn't block if invalid
  */
-function optionalAuthMiddleware(req, res, next) {
+const optionalAuthMiddleware = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
@@ -123,11 +117,7 @@ function optionalAuthMiddleware(req, res, next) {
     req.user = null;
     next();
   }
-}
+};
 
-// Export the middleware function as default export
 module.exports = authMiddleware;
-
-// Also export as named exports for flexibility
-module.exports.authMiddleware = authMiddleware;
-module.exports.optionalAuth = optionalAuthMiddleware;
+module.exports.optional = optionalAuthMiddleware;
