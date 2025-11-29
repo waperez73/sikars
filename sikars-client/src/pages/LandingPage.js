@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, ChevronLeft, Check, Sparkles, Package, Award, Users } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Check, Sparkles, Package, Award, Users, User, ShoppingBag, LogOut, Menu, X, Home } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 function LandingPage() {
   const navigate = useNavigate();
+  const { user, isAuthenticated, logout } = useAuth();
   const [language, setLanguage] = useState('en');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const heroImages = [
     '/images/hero-image-1.jpg', // Tobacco drying barn
@@ -20,6 +23,11 @@ function LandingPage() {
     }, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleLogout = () => {
+    logout();
+    setMobileMenuOpen(false);
+  };
 
   const content = {
     en: {
@@ -95,9 +103,10 @@ function LandingPage() {
             description: "For weddings, birthdays and corporate events."
           },
           {
-            icon: "",
+            icon: "/images/Gordo.png",
             title: "Cigar Aficionados",
-            description: "Discerning connoisseurs who value cigar craftsmanship."
+            description: "Discerning connoisseurs who value cigar craftsmanship.",
+            isImage: true
           },
           {
             icon: "🎯",
@@ -209,9 +218,10 @@ function LandingPage() {
             description: "Para bodas, cumpleaños y eventos corporativos."
           },
           {
-            icon: "🚬",
+            icon: "/images/Gordo.png",
             title: "Aficionados a los puros",
-            description: "Conocedores exigentes que valoran la elaboración del cigarro."
+            description: "Conocedores exigentes que valoran la elaboración del cigarro.",
+            isImage: true
           },
           {
             icon: "🎯",
@@ -286,51 +296,409 @@ function LandingPage() {
             </a>
           </div>
           
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <button
-              onClick={() => setLanguage('en')}
-              style={{
-                padding: '6px 12px',
-                borderRadius: '8px',
-                border: 'none',
-                background: language === 'en' ? '#d4af37' : 'rgba(255,255,255,0.2)',
-                color: language === 'en' ? '#1f1a17' : 'white',
-                fontSize: '12px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
-            >
-              EN
-            </button>
-            <button
-              onClick={() => setLanguage('sp')}
-              style={{
-                padding: '6px 12px',
-                borderRadius: '8px',
-                border: 'none',
-                background: language === 'sp' ? '#d4af37' : 'rgba(255,255,255,0.2)',
-                color: language === 'sp' ? '#1f1a17' : 'white',
-                fontSize: '12px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
-            >
-              ES
-            </button>
-            <a href="/login" style={{
-              color: 'white',
-              textDecoration: 'none',
-              fontSize: '14px',
-              fontWeight: '600',
-              marginLeft: '8px'
-            }}>
-              {language === 'en' ? 'Sign In' : 'Iniciar Sesión'}
-            </a>
+          {/* Desktop Navigation */}
+          <div style={{ 
+            display: 'flex', 
+            gap: '12px', 
+            alignItems: 'center',
+            '@media (maxWidth: 768px)': { display: 'none' }
+          }}>
+            {/* Language Switcher */}
+            <div style={{ display: 'flex', gap: '8px', marginRight: '16px' }}>
+              <button
+                onClick={() => setLanguage('en')}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: language === 'en' ? '#d4af37' : 'rgba(255,255,255,0.2)',
+                  color: language === 'en' ? '#1f1a17' : 'white',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                EN
+              </button>
+              <button
+                onClick={() => setLanguage('sp')}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: language === 'sp' ? '#d4af37' : 'rgba(255,255,255,0.2)',
+                  color: language === 'sp' ? '#1f1a17' : 'white',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                ES
+              </button>
+            </div>
+
+            {/* Authentication-aware Navigation */}
+            {isAuthenticated() ? (
+              <>
+                {/* Logged In - Show Dashboard, Orders, Profile, Logout */}
+                <button
+                  onClick={() => navigate('/dashboard')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 16px',
+                    background: 'rgba(255,255,255,0.2)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: 'white',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <Home size={16} />
+                  {language === 'en' ? 'Dashboard' : 'Panel'}
+                </button>
+
+                <button
+                  onClick={() => navigate('/orders')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 16px',
+                    background: 'rgba(255,255,255,0.2)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: 'white',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <ShoppingBag size={16} />
+                  {language === 'en' ? 'Orders' : 'Pedidos'}
+                </button>
+
+                <button
+                  onClick={() => navigate('/profile')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 16px',
+                    background: 'rgba(255,255,255,0.2)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: 'white',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <User size={16} />
+                  {user?.firstName || (language === 'en' ? 'Profile' : 'Perfil')}
+                </button>
+
+                <button
+                  onClick={handleLogout}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 16px',
+                    background: 'rgba(220, 53, 69, 0.8)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: 'white',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <LogOut size={16} />
+                  {language === 'en' ? 'Logout' : 'Salir'}
+                </button>
+              </>
+            ) : (
+              <>
+                {/* Not Logged In - Show Sign In / Sign Up */}
+                <a 
+                  href="/login" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate('/login');
+                  }}
+                  style={{
+                    color: 'white',
+                    textDecoration: 'none',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    padding: '8px 16px',
+                    background: 'rgba(255,255,255,0.2)',
+                    borderRadius: '8px',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  {language === 'en' ? 'Sign In' : 'Iniciar Sesión'}
+                </a>
+
+                <a 
+                  href="/signup" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate('/signup');
+                  }}
+                  style={{
+                    color: '#1f1a17',
+                    textDecoration: 'none',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    padding: '8px 16px',
+                    background: '#d4af37',
+                    borderRadius: '8px',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  {language === 'en' ? 'Sign Up' : 'Registrarse'}
+                </a>
+              </>
+            )}
           </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            style={{
+              display: 'none',
+              '@media (maxWidth: 768px)': { display: 'block' },
+              background: 'rgba(255,255,255,0.2)',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '8px',
+              cursor: 'pointer',
+              color: 'white'
+            }}
+            className="mobile-menu-btn"
+          >
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
+
+        {/* Mobile Menu Dropdown */}
+        {mobileMenuOpen && (
+          <div style={{
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            right: 0,
+            background: '#6a4f3a',
+            padding: '16px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px'
+          }}>
+            {/* Language Switcher Mobile */}
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+              <button
+                onClick={() => {
+                  setLanguage('en');
+                  setMobileMenuOpen(false);
+                }}
+                style={{
+                  flex: 1,
+                  padding: '8px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: language === 'en' ? '#d4af37' : 'rgba(255,255,255,0.2)',
+                  color: language === 'en' ? '#1f1a17' : 'white',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                EN
+              </button>
+              <button
+                onClick={() => {
+                  setLanguage('sp');
+                  setMobileMenuOpen(false);
+                }}
+                style={{
+                  flex: 1,
+                  padding: '8px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: language === 'sp' ? '#d4af37' : 'rgba(255,255,255,0.2)',
+                  color: language === 'sp' ? '#1f1a17' : 'white',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                ES
+              </button>
+            </div>
+
+            {isAuthenticated() ? (
+              <>
+                <button
+                  onClick={() => {
+                    navigate('/dashboard');
+                    setMobileMenuOpen(false);
+                  }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '12px',
+                    background: 'rgba(255,255,255,0.2)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: 'white',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    textAlign: 'left'
+                  }}
+                >
+                  <Home size={18} />
+                  {language === 'en' ? 'Dashboard' : 'Panel'}
+                </button>
+
+                <button
+                  onClick={() => {
+                    navigate('/orders');
+                    setMobileMenuOpen(false);
+                  }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '12px',
+                    background: 'rgba(255,255,255,0.2)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: 'white',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    textAlign: 'left'
+                  }}
+                >
+                  <ShoppingBag size={18} />
+                  {language === 'en' ? 'My Orders' : 'Mis Pedidos'}
+                </button>
+
+                <button
+                  onClick={() => {
+                    navigate('/profile');
+                    setMobileMenuOpen(false);
+                  }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '12px',
+                    background: 'rgba(255,255,255,0.2)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: 'white',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    textAlign: 'left'
+                  }}
+                >
+                  <User size={18} />
+                  {user?.firstName ? `${user.firstName}'s Profile` : (language === 'en' ? 'Profile' : 'Perfil')}
+                </button>
+
+                <button
+                  onClick={handleLogout}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '12px',
+                    background: 'rgba(220, 53, 69, 0.8)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: 'white',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    textAlign: 'left'
+                  }}
+                >
+                  <LogOut size={18} />
+                  {language === 'en' ? 'Logout' : 'Cerrar Sesión'}
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => {
+                    navigate('/login');
+                    setMobileMenuOpen(false);
+                  }}
+                  style={{
+                    padding: '12px',
+                    background: 'rgba(255,255,255,0.2)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: 'white',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {language === 'en' ? 'Sign In' : 'Iniciar Sesión'}
+                </button>
+
+                <button
+                  onClick={() => {
+                    navigate('/signup');
+                    setMobileMenuOpen(false);
+                  }}
+                  style={{
+                    padding: '12px',
+                    background: '#d4af37',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: '#1f1a17',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {language === 'en' ? 'Sign Up' : 'Registrarse'}
+                </button>
+              </>
+            )}
+          </div>
+        )}
       </header>
+
+      {/* Add CSS for mobile responsiveness */}
+      <style>{`
+        @media (max-width: 768px) {
+          header > div > div:nth-child(2):not(.mobile-menu-btn) {
+            display: none !important;
+          }
+          .mobile-menu-btn {
+            display: block !important;
+          }
+        }
+      `}</style>
 
       {/* Hero Section with Carousel */}
       <section style={{
@@ -423,7 +791,7 @@ function LandingPage() {
             </p>
             
             <button
-              onClick={() => navigate('/builder')}
+              onClick={() => navigate(isAuthenticated() ? '/builder' : '/signup')}
               style={{
                 background: 'linear-gradient(135deg, #d4af37, #f4d03f)',
                 color: '#1f1a17',
@@ -446,6 +814,31 @@ function LandingPage() {
               {t.hero.cta}
               <ChevronRight size={24} />
             </button>
+
+            {!isAuthenticated() && (
+              <p style={{
+                marginTop: '20px',
+                fontSize: '14px',
+                color: '#e9ded4',
+                textShadow: '1px 1px 4px rgba(0,0,0,0.5)'
+              }}>
+                {language === 'en' ? 'Already have an account?' : '¿Ya tienes una cuenta?'}{' '}
+                <a
+                  href="/login"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate('/login');
+                  }}
+                  style={{
+                    color: '#d4af37',
+                    textDecoration: 'underline',
+                    fontWeight: '600'
+                  }}
+                >
+                  {language === 'en' ? 'Sign In' : 'Iniciar Sesión'}
+                </a>
+              </p>
+            )}
           </div>
         </div>
 
@@ -750,7 +1143,22 @@ function LandingPage() {
                 border: '2px solid #e0e0e0'
               }}>
                 <div style={{ fontSize: '40px', marginBottom: '16px' }}>
-                  {segment.icon}
+                  {segment.isImage ? (
+                    <img 
+                      src={segment.icon} 
+                      alt={segment.title}
+                      style={{
+                        width: '60px',
+                        height: '60px',
+                        objectFit: 'contain',
+                        margin: '0 auto',
+                        display: 'block'
+                      }}
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                    />
+                  ) : (
+                    segment.icon
+                  )}
                 </div>
                 <h3 style={{
                   fontSize: '16px',
@@ -958,12 +1366,28 @@ function LandingPage() {
           <a href="/builder" style={{ color: 'white', textDecoration: 'none', fontSize: '14px' }}>
             {language === 'en' ? 'Builder' : 'Constructor'}
           </a>
-          <a href="/login" style={{ color: 'white', textDecoration: 'none', fontSize: '14px' }}>
-            {language === 'en' ? 'Sign In' : 'Iniciar Sesión'}
-          </a>
-          <a href="/signup" style={{ color: 'white', textDecoration: 'none', fontSize: '14px' }}>
-            {language === 'en' ? 'Sign Up' : 'Registrarse'}
-          </a>
+          {isAuthenticated() ? (
+            <>
+              <a href="/dashboard" style={{ color: 'white', textDecoration: 'none', fontSize: '14px' }}>
+                {language === 'en' ? 'Dashboard' : 'Panel'}
+              </a>
+              <a href="/orders" style={{ color: 'white', textDecoration: 'none', fontSize: '14px' }}>
+                {language === 'en' ? 'Orders' : 'Pedidos'}
+              </a>
+              <a href="/profile" style={{ color: 'white', textDecoration: 'none', fontSize: '14px' }}>
+                {language === 'en' ? 'Profile' : 'Perfil'}
+              </a>
+            </>
+          ) : (
+            <>
+              <a href="/login" style={{ color: 'white', textDecoration: 'none', fontSize: '14px' }}>
+                {language === 'en' ? 'Sign In' : 'Iniciar Sesión'}
+              </a>
+              <a href="/signup" style={{ color: 'white', textDecoration: 'none', fontSize: '14px' }}>
+                {language === 'en' ? 'Sign Up' : 'Registrarse'}
+              </a>
+            </>
+          )}
         </div>
 
         <p style={{
