@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './components/AuthContext';
+import { AuthProvider } from './context/AuthContext';
 
 // Import pages
 import LandingPage from './pages/LandingPage';
@@ -11,7 +11,9 @@ import Payment from './pages/Payment';
 import OrderConfirmation from './pages/OrderConfirmation';
 import OrderHistory from './pages/OrderHistory';
 import Dashboard from './pages/Dashboard';
-import ProtectedRoute from './context/ProtectedRoute';
+import ProtectedRoute from './components/ProtectedRoute';
+import UserProfile from './pages/UserProfile';
+import EmailVerification from './pages/EmailVerification';
 
 function App() {
   return (
@@ -62,7 +64,19 @@ function App() {
               </ProtectedRoute>
             } 
           />
-          
+          <Route 
+            path="/profile" 
+            element={
+              <ProtectedRoute>
+                <UserProfile />
+              </ProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/verify-email/:token" 
+            element={<EmailVerification />} 
+          />
           {/* 404 Page */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -4,6 +4,7 @@ const cors = require('cors');
 // Import routes
 const authRoutes = require('../src/routes/authRoutes');
 const userRoutes = require('../src/routes/userRoutes');
+const orderRoutes = require('../src/routes/orderRoutes');
 
 const app = express();
 
@@ -12,6 +13,7 @@ app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
   credentials: true
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -24,6 +26,7 @@ app.use((req, res, next) => {
 // Register routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/orders', orderRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -51,5 +54,6 @@ app.use((err, req, res, next) => {
     error: process.env.NODE_ENV === 'development' ? err.message : undefined
   });
 });
+
 
 module.exports = app;
