@@ -1,25 +1,78 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import LandingPage from './LandingPage';
-import Builder from './Builder';
+import { AuthProvider } from './components/AuthContext';
+
+// Import pages
+import LandingPage from './pages/LandingPage';
+import Builder from './pages/Builder';
+import Login from './pages/Login';
 import Signup from './pages/Signup';
-import SubmitPayment from './Submitpayment';
+import Payment from './pages/Payment';
+import OrderConfirmation from './pages/OrderConfirmation';
+import OrderHistory from './pages/OrderHistory';
+import Dashboard from './pages/Dashboard';
+import ProtectedRoute from './context/ProtectedRoute';
 
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/builder" element={<Builder />} />
-        <Route path="/login" element={<LoginPlaceholder />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/payment" element={<SubmitPayment />} />
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          
+          {/* Semi-Protected Routes (can access as guest but better with auth) */}
+          <Route path="/builder" element={<Builder />} />
+          
+          {/* Protected Routes (require authentication) */}
+          <Route 
+            path="/payment" 
+            element={
+              <ProtectedRoute>
+                <Payment />
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/order-confirmation/:orderId" 
+            element={
+              <ProtectedRoute>
+                <OrderConfirmation />
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/orders" 
+            element={
+              <ProtectedRoute>
+                <OrderHistory />
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/dashboard" 
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
+          
+          {/* 404 Page */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </AuthProvider>
     </Router>
   );
 }
-// Placeholder Login Page - replace with your actual login component
-function LoginPlaceholder() {
+
+// Simple 404 Component
+function NotFound() {
   return (
     <div style={{
       minHeight: '100vh',
@@ -28,118 +81,29 @@ function LoginPlaceholder() {
       alignItems: 'center',
       justifyContent: 'center',
       padding: '16px',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      textAlign: 'center'
     }}>
-      <div style={{
-        background: 'white',
-        borderRadius: '24px',
-        padding: '40px',
-        maxWidth: '400px',
-        width: '100%',
-        boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
-        border: '2px solid #e0e0e0'
-      }}>
-        <h2 style={{
-          fontSize: '28px',
-          fontWeight: '700',
-          color: '#6a4f3a',
-          margin: '0 0 24px 0',
-          textAlign: 'center'
-        }}>
-          Login to Sikars
-        </h2>
-        
-        <form onSubmit={(e) => { e.preventDefault(); alert('Login functionality to be implemented'); }}>
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{
-              display: 'block',
-              fontSize: '14px',
-              fontWeight: '600',
-              color: '#1f1a17',
-              marginBottom: '8px'
-            }}>
-              Email
-            </label>
-            <input
-              type="email"
-              placeholder="your@email.com"
-              style={{
-                width: '100%',
-                padding: '12px',
-                fontSize: '16px',
-                border: '2px solid #e0e0e0',
-                borderRadius: '12px',
-                fontFamily: 'inherit'
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '24px' }}>
-            <label style={{
-              display: 'block',
-              fontSize: '14px',
-              fontWeight: '600',
-              color: '#1f1a17',
-              marginBottom: '8px'
-            }}>
-              Password
-            </label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              style={{
-                width: '100%',
-                padding: '12px',
-                fontSize: '16px',
-                border: '2px solid #e0e0e0',
-                borderRadius: '12px',
-                fontFamily: 'inherit'
-              }}
-            />
-          </div>
-
-          <button
-            type="submit"
-            style={{
-              width: '100%',
-              padding: '14px',
-              background: 'linear-gradient(135deg, #6a4f3a, #8a6a52)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px',
-              fontSize: '16px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              marginBottom: '16px'
-            }}
-          >
-            Sign In
-          </button>
-
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            fontSize: '14px',
-            color: '#8b7a6b'
-          }}>
-            <a href="/forgot-password" style={{ color: '#6a4f3a', textDecoration: 'none' }}>
-              Forgot Password?
-            </a>
-            <a href="/signup" style={{ color: '#6a4f3a', textDecoration: 'none' }}>
-              Sign Up
-            </a>
-          </div>
-        </form>
-
-        <div style={{ textAlign: 'center', marginTop: '24px' }}>
-          <a href="/" style={{
-            color: '#8b7a6b',
+      <div>
+        <h1 style={{ fontSize: '72px', margin: '0 0 16px 0', color: '#6a4f3a' }}>404</h1>
+        <h2 style={{ fontSize: '24px', margin: '0 0 16px 0', color: '#1f1a17' }}>Page Not Found</h2>
+        <p style={{ fontSize: '16px', color: '#8b7a6b', marginBottom: '24px' }}>
+          The page you're looking for doesn't exist.
+        </p>
+        <a 
+          href="/"
+          style={{
+            display: 'inline-block',
+            padding: '12px 24px',
+            background: 'linear-gradient(135deg, #6a4f3a, #8a6a52)',
+            color: 'white',
             textDecoration: 'none',
-            fontSize: '14px'
-          }}>
-            ← Back to Home
-          </a>
-        </div>
+            borderRadius: '12px',
+            fontWeight: '600'
+          }}
+        >
+          Go to Home
+        </a>
       </div>
     </div>
   );

@@ -111,7 +111,7 @@ function Login() {
         setSuccessMessage('Login successful! Redirecting...');
 
         // Redirect to builder or intended destination
-        const intendedDestination = location.state?.from || '/builder';
+        const intendedDestination = location.state?.from || '/';
         
         setTimeout(() => {
           navigate(intendedDestination, { replace: true });

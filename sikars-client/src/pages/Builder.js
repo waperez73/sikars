@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Check, Package, Sparkles } from 'lucide-react';
-import enTranslations from './languages/en';
-import spTranslations from './languages/sp';
+import enTranslations from '../languages/en';
+import spTranslations from '../languages/sp';
 
 const TRANSLATIONS = { en: enTranslations, sp: spTranslations };
 
