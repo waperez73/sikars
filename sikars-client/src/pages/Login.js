@@ -420,8 +420,8 @@ function Login() {
           </div>
         </form>
 
-        {/* Divider */}
-        <div style={{
+       {/* Divider */}
+       {/*} <div style={{
           display: 'flex',
           alignItems: 'center',
           margin: '24px 0',
@@ -431,10 +431,10 @@ function Login() {
           <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
           <span style={{ padding: '0 16px' }}>or</span>
           <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
-        </div>
+        </div> */}
 
         {/* Continue as Guest */}
-        <button
+        {/*<button
           onClick={() => navigate('/builder')}
           disabled={isSubmitting}
           style={{
@@ -452,7 +452,7 @@ function Login() {
           }}
         >
           Continue as Guest
-        </button>
+        </button> */}
 
         {/* Back to Home */}
         <div style={{ textAlign: 'center', marginTop: '24px' }}>

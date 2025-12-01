@@ -128,10 +128,10 @@ function SubmitPayment() {
       });
       
       // Show success message
-      alert(`Payment of $${parseFloat(formData.amount).toFixed(2)} submitted successfully!`);
+      console.log(`Payment of $${parseFloat(formData.amount).toFixed(2)} submitted successfully!`);
       
-      // Navigate back to home or dashboard
-      navigate('/');
+      // Navigate back to order confirmation or home page
+      navigate('/order-confirmation');
     }
   };
 
