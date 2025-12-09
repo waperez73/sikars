@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Package, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
-
-// API configuration
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+import { useAuth } from '../context/AuthContext';
 
 function Login() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { login } = useAuth(); // ← Using login from AuthContext
   
   // Get any passed state (like success message from registration)
   const registrationMessage = location.state?.message;
@@ -81,28 +80,11 @@ function Login() {
     setIsSubmitting(true);
 
     try {
-      // Call backend API
-      const response = await fetch(`${API_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.email.trim().toLowerCase(),
-          password: formData.password
-        }),
-      });
+      // Use the login function from AuthContext
+      const result = await login(formData.email.trim().toLowerCase(), formData.password);
 
-      // Parse response
-      const data = await response.json();
-
-      // Handle response
-      if (response.ok) {
-        // Success! Store token and user data
-        localStorage.setItem('authToken', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-
-        // If "Remember Me" is checked, also store in sessionStorage
+      if (result.success) {
+        // If "Remember Me" is checked, store in sessionStorage
         if (formData.rememberMe) {
           sessionStorage.setItem('rememberMe', 'true');
         }
@@ -110,35 +92,21 @@ function Login() {
         // Show success message briefly
         setSuccessMessage('Login successful! Redirecting...');
 
-        // Redirect to builder or intended destination
-        const intendedDestination = location.state?.from || '/';
+        // Redirect to dashboard or intended destination
+        const intendedDestination = location.state?.from || '/dashboard';
         
+        // Small delay to show success message
         setTimeout(() => {
           navigate(intendedDestination, { replace: true });
-        }, 1000);
+        }, 800);
 
       } else {
-        // Handle error responses
-        if (response.status === 401) {
-          // Invalid credentials
-          setApiError(data.message || 'Invalid email or password. Please try again.');
-          setErrors({ 
-            email: ' ',  // Mark field as error without specific message
-            password: ' '
-          });
-        } else if (response.status === 403) {
-          // Account deactivated
-          setApiError(data.message || 'Your account has been deactivated. Please contact support.');
-        } else if (response.status === 400) {
-          // Validation errors
-          setApiError(data.message || 'Please check your input and try again.');
-        } else if (response.status === 500) {
-          // Server error
-          setApiError('Server error. Please try again later.');
-        } else {
-          // Generic error
-          setApiError(data.message || 'Login failed. Please try again.');
-        }
+        // Handle error from AuthContext login
+        setApiError(result.error || 'Login failed. Please try again.');
+        setErrors({ 
+          email: ' ',  // Mark field as error without specific message
+          password: ' '
+        });
       }
     } catch (error) {
       // Network or other errors
@@ -420,8 +388,8 @@ function Login() {
           </div>
         </form>
 
-       {/* Divider */}
-       {/*} <div style={{
+        {/* Divider */}
+        <div style={{
           display: 'flex',
           alignItems: 'center',
           margin: '24px 0',
@@ -431,9 +399,9 @@ function Login() {
           <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
           <span style={{ padding: '0 16px' }}>or</span>
           <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
-        </div> */}
+        </div>
 
-        {/* Continue as Guest */}
+        {/* Continue as Guest * - removed not allow to shop as guest/}
         {/*<button
           onClick={() => navigate('/builder')}
           disabled={isSubmitting}
@@ -453,6 +421,7 @@ function Login() {
         >
           Continue as Guest
         </button> */}
+
 
         {/* Back to Home */}
         <div style={{ textAlign: 'center', marginTop: '24px' }}>

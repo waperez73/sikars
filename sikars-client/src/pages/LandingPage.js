@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, ChevronLeft, Check, Sparkles, Package, Award, Users, User, ShoppingBag, LogOut, Menu, X, Home } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Check, Sparkles, Package, Award, Users, User, ShoppingBag, LogOut, Menu, X, Home, Plus, Edit3 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 function LandingPage() {
@@ -9,11 +9,18 @@ function LandingPage() {
   const [language, setLanguage] = useState('en');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [customizationModal, setCustomizationModal] = useState(false);
+  const [customization, setCustomization] = useState({
+    bandText: '',
+    engraving: '',
+    quantity: 1
+  });
 
   const heroImages = [
-    '/images/hero-image-1.jpg', // Tobacco drying barn
-    '/images/hero-image-2.jpg', // Person in tobacco field
-    '/images/hero-image-3.jpg'  // Tobacco field with drying barn
+    '/images/hero-image-1.jpg',
+    '/images/hero-image-2.jpg',
+    '/images/hero-image-3.jpg'
   ];
 
   // Auto-rotate carousel every 5 seconds
@@ -29,235 +36,198 @@ function LandingPage() {
     setMobileMenuOpen(false);
   };
 
+  // Product Configurations (Pre-configured cigars)
+  const products = [
+    {
+      id: 'classic-robusto',
+      name: language === 'en' ? 'Classic Robusto' : 'Robusto Clásico',
+      description: language === 'en' 
+        ? 'Rich and balanced, our most popular choice'
+        : 'Rico y equilibrado, nuestra elección más popular',
+      image: '/images/robusto.png',
+      price: 75.00,
+      configuration: {
+        size: 'robusto',
+        binder: 'habano',
+        flavor: 'medium',
+        bandStyle: 'beveled',
+        box: 'classic'
+      },
+      details: {
+        size: '5" x 50',
+        strength: language === 'en' ? 'Medium' : 'Medio',
+        wrapper: 'Habano',
+        box: language === 'en' ? 'Classic Cedar' : 'Cedro Clásico'
+      }
+    },
+    {
+      id: 'premium-gordo',
+      name: language === 'en' ? 'Premium Gordo' : 'Gordo Premium',
+      description: language === 'en'
+        ? 'Bold and full-bodied for the aficionado'
+        : 'Audaz y con cuerpo para el aficionado',
+      image: '/images/gordo.png',
+      price: 95.00,
+      configuration: {
+        size: 'gordo',
+        binder: 'maduro',
+        flavor: 'strong',
+        bandStyle: 'dome',
+        box: 'modern'
+      },
+      details: {
+        size: '6" x 60',
+        strength: language === 'en' ? 'Full' : 'Fuerte',
+        wrapper: 'Maduro',
+        box: language === 'en' ? 'Modern Lacquered' : 'Lacado Moderno'
+      }
+    },
+    {
+      id: 'elegant-churchill',
+      name: language === 'en' ? 'Elegant Churchill' : 'Churchill Elegante',
+      description: language === 'en'
+        ? 'Refined taste, perfect for special occasions'
+        : 'Sabor refinado, perfecto para ocasiones especiales',
+      image: '/images/churchill.png',
+      price: 110.00,
+      configuration: {
+        size: 'churchill',
+        binder: 'connecticut',
+        flavor: 'light',
+        bandStyle: 'round',
+        box: 'rustic'
+      },
+      details: {
+        size: '7" x 47',
+        strength: language === 'en' ? 'Mild-Medium' : 'Suave-Medio',
+        wrapper: 'Connecticut',
+        box: language === 'en' ? 'Rustic Wood' : 'Madera Rústica'
+      }
+    },
+    {
+      id: 'signature-belicoso',
+      name: language === 'en' ? 'Signature Belicoso' : 'Belicoso Signature',
+      description: language === 'en'
+        ? 'Complex flavor profile with a distinctive shape'
+        : 'Perfil de sabor complejo con forma distintiva',
+      image: '/images/belicoso.png',
+      price: 105.00,
+      configuration: {
+        size: 'belicoso',
+        binder: 'habano',
+        flavor: 'strong',
+        bandStyle: 'square',
+        box: 'modern'
+      },
+      details: {
+        size: '5.5" x 52',
+        strength: language === 'en' ? 'Medium-Full' : 'Medio-Fuerte',
+        wrapper: 'Habano',
+        box: language === 'en' ? 'Modern Lacquered' : 'Lacado Moderno'
+      }
+    }
+  ];
+
+  const handleAddToCart = (product) => {
+    setSelectedProduct(product);
+    setCustomization({
+      bandText: '',
+      engraving: '',
+      quantity: 1
+    });
+    setCustomizationModal(true);
+  };
+
+  const handleProceedToCheckout = () => {
+    if (!isAuthenticated()) {
+      // Save order to localStorage for after login
+      const orderData = {
+        ...selectedProduct.configuration,
+        bandText: customization.bandText,
+        engraving: customization.engraving,
+        quantity: customization.quantity,
+        price: selectedProduct.price * customization.quantity,
+        productName: selectedProduct.name,
+        currency: 'USD'
+      };
+      localStorage.setItem('pendingOrder', JSON.stringify(orderData));
+      alert(language === 'en'
+        ? 'Please sign in or create an account to complete your order.'
+        : 'Por favor inicia sesión o crea una cuenta para completar tu pedido.');
+      navigate('/signup');
+      return;
+    }
+
+    // Navigate to payment with configuration
+    const orderData = {
+      ...selectedProduct.configuration,
+      bandText: customization.bandText,
+      engraving: customization.engraving,
+      quantity: customization.quantity,
+      price: selectedProduct.price * customization.quantity,
+      productName: selectedProduct.name,
+      currency: 'USD'
+    };
+    localStorage.setItem('orderData', JSON.stringify(orderData));
+    setCustomizationModal(false);
+    navigate('/payment');
+  };
+
+  const handleCustomBuilder = () => {
+    navigate('/builder');
+  };
+
   const content = {
     en: {
       hero: {
         title: "Heritage in Your Hands. Uniquely Yours.",
-        subtitle: "Experience the art of custom cigars, crafted with ancient Dominican traditions. Sikars offers a luxury journey in cigar creation, combining heritage with personal artistry.",
-        cta: "Create Your Sikars",
-        tagline: "From leaves to ashes - build the cigar that speaks for you."
+        subtitle: "Choose from our curated collection of premium cigars, each crafted with ancient Dominican traditions.",
+        cta: "Shop Our Collection",
+        customBuilder: "Custom Builder"
       },
-      distinction: {
-        title: "Our Distinction in the Market",
-        subtitle: "Sikars stands out by integrating authentic origin with a truly unique cigar experience, going beyond aesthetics to highlight the soul of the cigar.",
-        competitors: {
-          title: "Competitors' Focus",
-          points: [
-            "Only customize labels and packaging",
-            "Limited focus on origin and complete cigar crafting",
-            "Limited customization"
-          ]
-        },
-        sikars: {
-          title: "Sikars Advantage",
-          points: [
-            "Story of origin, cultivation and cigar handling",
-            "Complete cigar crafting experience",
-            "Diversity in style and customization (color, occasion, etc.)",
-            "Custom packaging"
-          ]
-        }
+      products: {
+        title: "Our Premium Collection",
+        subtitle: "Hand-selected configurations, ready to personalize",
+        addToCart: "Add to Cart",
+        customize: "Customize & Order",
+        details: "Details"
       },
-      differentiation: {
-        title: "What Makes Us Different",
-        subtitle: "Our commitment to authentic origin and comprehensive customization ensures an unparalleled luxury journey with cigars.",
-        features: [
-          {
-            icon: "🇩🇴",
-            title: "100% Dominican Origin",
-            description: "From Santiago, the world capital of tobacco."
-          },
-          {
-            icon: "🎨",
-            title: "Complete Customization",
-            description: "Wrapper, filler, size, strength and band options."
-          },
-          {
-            icon: "📦",
-            title: "Luxury Package",
-            description: "Engraved boxes, gift-ready packages."
-          },
-          {
-            icon: "🎬",
-            title: "Experiential Elements",
-            description: "Videos, stories linked to QR codes. (Coming soon)"
-          },
-          {
-            icon: "👑",
-            title: "Membership & Subscriptions",
-            description: "Exclusive access and premium benefits. (Coming soon)"
-          }
-        ]
-      },
-      audience: {
-        title: "Our Distinguished Audience",
-        segments: [
-          {
-            icon: "✨",
-            title: "Exclusive Experience Enthusiasts",
-            description: "Seeking unique, high-end gifts."
-          },
-          {
-            icon: "🎉",
-            title: "Event Organizers",
-            description: "For weddings, birthdays and corporate events."
-          },
-          {
-            icon: "/images/Gordo.png",
-            title: "Cigar Aficionados",
-            description: "Discerning connoisseurs who value cigar craftsmanship.",
-            isImage: true
-          },
-          {
-            icon: "🎯",
-            title: "Personalized Experience Seekers",
-            description: "Who desire unique, quality products."
-          }
-        ]
-      },
-      process: {
-        title: "User Experience: Custom Creation",
-        subtitle: "From conception to delivery, Sikars ensures a smooth and intuitive process for creating your perfect custom cigar.",
-        steps: [
-          {
-            number: "1",
-            title: "Customize Your Cigars",
-            description: "Use the mobile app to select vitola, wrapper, strength and flavor profile, crafting your ideal cigar."
-          },
-          {
-            number: "2",
-            title: "Design Your Exclusive Box",
-            description: "Choose box materials and design your personalized engraving, ensuring an unmatched presentation."
-          },
-          {
-            number: "3",
-            title: "Verify and Approve",
-            description: "Confirm all details: engraving, cigar type, size, and flavor, ensuring your complete satisfaction."
-          },
-          {
-            number: "4",
-            title: "Finalize Your Order",
-            description: "Authorize the order and make payment to submit your order, including your preferred delivery method."
-          }
-        ]
-      },
-      footer: {
-        tagline: "Heritage in Your Hands. Uniquely Yours."
+      customization: {
+        title: "Personalize Your Order",
+        bandText: "Text on Cigar Band",
+        bandPlaceholder: "Enter text (max 18 chars)",
+        engraving: "Box Engraving",
+        engravingPlaceholder: "Enter engraving (max 20 chars)",
+        quantity: "Quantity",
+        cancel: "Cancel",
+        proceedToCheckout: "Proceed to Checkout",
+        total: "Total"
       }
     },
     sp: {
       hero: {
         title: "Herencia en tus manos. Únicamente tuyo.",
-        subtitle: "Experimente el arte de los cigarros a medida, elaborados con antiguas tradiciones Dominicanas. Sikars ofrece un viaje de lujo en la creación de cigarros, combinando el patrimonio con el arte personal.",
-        cta: "Crea Tu Sikar",
-        tagline: "De hojas a cenizas - construye el cigarro que hable por ti."
+        subtitle: "Elige de nuestra colección curada de puros premium, cada uno elaborado con antiguas tradiciones dominicanas.",
+        cta: "Ver Colección",
+        customBuilder: "Constructor Personalizado"
       },
-      distinction: {
-        title: "Panorama del mercado y nuestra distinción",
-        subtitle: "Sikars se destaca al integrar un origen auténtico con una experiencia de puro verdaderamente única, yendo más allá de lo estético para resaltar el alma del puro.",
-        competitors: {
-          title: "Enfoque de la competencia",
-          points: [
-            "Únicamente personaliza las etiquetas y el embalaje",
-            "Enfoque limitado en el origen y la elaboración completa de puros",
-            "Personalización limitada"
-          ]
-        },
-        sikars: {
-          title: "Ventaja de Sikars",
-          points: [
-            "Historia de la procedencia, cultivo y manejo del cigarro",
-            "Experiencia completa de elaboración de cigarros",
-            "Diversidad en estilo y personalización (color, ocasión, etc.)",
-            "Empaque customizado"
-          ]
-        }
+      products: {
+        title: "Nuestra Colección Premium",
+        subtitle: "Configuraciones seleccionadas, listas para personalizar",
+        addToCart: "Agregar al Carrito",
+        customize: "Personalizar y Ordenar",
+        details: "Detalles"
       },
-      differentiation: {
-        title: "Que nos hace diferente",
-        subtitle: "Nuestro compromiso con el origen auténtico y la personalización integral asegura un viaje de lujo sin igual con los puros.",
-        features: [
-          {
-            icon: "🇩🇴",
-            title: "100% de origen dominicano",
-            description: "Desde Santiago, la capital mundial del tabaco."
-          },
-          {
-            icon: "🎨",
-            title: "Personalización completa",
-            description: "Opciones de capa, relleno, tamaño, fortaleza y banda."
-          },
-          {
-            icon: "📦",
-            title: "Paquete de lujo",
-            description: "Cajas grabadas, paquetes listos para regalar."
-          },
-          {
-            icon: "🎬",
-            title: "Elementos experienciales",
-            description: "Videos, historias vinculadas a QR. (Próximamente)"
-          },
-          {
-            icon: "👑",
-            title: "Membresía y suscripciones",
-            description: "Acceso exclusivo y beneficios premium. (Próximamente)"
-          }
-        ]
-      },
-      audience: {
-        title: "Nuestro público distinguido",
-        segments: [
-          {
-            icon: "✨",
-            title: "Entusiasta de las experiencias exclusivas",
-            description: "Buscando regalos únicos y de alta gama."
-          },
-          {
-            icon: "🎉",
-            title: "Organizadores de eventos",
-            description: "Para bodas, cumpleaños y eventos corporativos."
-          },
-          {
-            icon: "/images/Gordo.png",
-            title: "Aficionados a los puros",
-            description: "Conocedores exigentes que valoran la elaboración del cigarro.",
-            isImage: true
-          },
-          {
-            icon: "🎯",
-            title: "Buscadores de experiencias personalizadas",
-            description: "Que desean productos únicos y de buena calidad."
-          }
-        ]
-      },
-      process: {
-        title: "Experiencia del Usuario: Creación a tu Medida",
-        subtitle: "Desde la concepción hasta la entrega, Sikars asegura un proceso fluido e intuitivo para crear tu cigarro personalizado perfecto.",
-        steps: [
-          {
-            number: "1",
-            title: "Personaliza Tu Puros",
-            description: "Utiliza la aplicación móvil para seleccionar vitola, capa, fortaleza y perfil de sabor, elaborando tu cigarro ideal."
-          },
-          {
-            number: "2",
-            title: "Diseña Tu Caja Exclusiva",
-            description: "Elige materiales para la caja y diseña tu grabado personalizado, asegurando una presentación inigualable."
-          },
-          {
-            number: "3",
-            title: "Verifica y Aprueba",
-            description: "Confirma todos los detalles: grabado, tipo de cigarro, tamaño, y sabor, asegurando tu completa satisfacción."
-          },
-          {
-            number: "4",
-            title: "Finaliza Tu Pedido",
-            description: "Autoriza la orden y realiza el depósito para someter tu pedido, incluyendo tu método de entrega preferido."
-          }
-        ]
-      },
-      footer: {
-        tagline: "Herencia en tus manos. Únicamente tuyo."
+      customization: {
+        title: "Personaliza Tu Pedido",
+        bandText: "Texto en la Banda",
+        bandPlaceholder: "Ingresa texto (máx 18 chars)",
+        engraving: "Grabado en Caja",
+        engravingPlaceholder: "Ingresa grabado (máx 20 chars)",
+        quantity: "Cantidad",
+        cancel: "Cancelar",
+        proceedToCheckout: "Proceder al Pago",
+        total: "Total"
       }
     }
   };
@@ -286,9 +256,7 @@ function LandingPage() {
             <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none', color: 'white' }}>
               <Package size={28} />
               <div>
-                <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '700' }}>
-                  {language === 'en' ? 'Sikars' : 'Sikars'}
-                </h1>
+                <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '700' }}>Sikars</h1>
                 <p style={{ margin: 0, fontSize: '13px', opacity: 0.9 }}>
                   {language === 'en' ? 'Custom Cigars with Ancient Soul' : 'Cigarros a medida con alma antigua'}
                 </p>
@@ -297,12 +265,7 @@ function LandingPage() {
           </div>
           
           {/* Desktop Navigation */}
-          <div style={{ 
-            display: 'flex', 
-            gap: '12px', 
-            alignItems: 'center',
-            '@media (maxWidth: 768px)': { display: 'none' }
-          }}>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }} className="desktop-nav">
             {/* Language Switcher */}
             <div style={{ display: 'flex', gap: '8px', marginRight: '16px' }}>
               <button
@@ -315,8 +278,7 @@ function LandingPage() {
                   color: language === 'en' ? '#1f1a17' : 'white',
                   fontSize: '12px',
                   fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
+                  cursor: 'pointer'
                 }}
               >
                 EN
@@ -331,18 +293,15 @@ function LandingPage() {
                   color: language === 'sp' ? '#1f1a17' : 'white',
                   fontSize: '12px',
                   fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
+                  cursor: 'pointer'
                 }}
               >
                 ES
               </button>
             </div>
 
-            {/* Authentication-aware Navigation */}
             {isAuthenticated() ? (
               <>
-                {/* Logged In - Show Dashboard, Orders, Profile, Logout */}
                 <button
                   onClick={() => navigate('/dashboard')}
                   style={{
@@ -356,8 +315,7 @@ function LandingPage() {
                     color: 'white',
                     fontSize: '14px',
                     fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s'
+                    cursor: 'pointer'
                   }}
                 >
                   <Home size={16} />
@@ -377,8 +335,7 @@ function LandingPage() {
                     color: 'white',
                     fontSize: '14px',
                     fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s'
+                    cursor: 'pointer'
                   }}
                 >
                   <ShoppingBag size={16} />
@@ -398,8 +355,7 @@ function LandingPage() {
                     color: 'white',
                     fontSize: '14px',
                     fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s'
+                    cursor: 'pointer'
                   }}
                 >
                   <User size={16} />
@@ -419,8 +375,7 @@ function LandingPage() {
                     color: 'white',
                     fontSize: '14px',
                     fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s'
+                    cursor: 'pointer'
                   }}
                 >
                   <LogOut size={16} />
@@ -429,7 +384,6 @@ function LandingPage() {
               </>
             ) : (
               <>
-                {/* Not Logged In - Show Sign In / Sign Up */}
                 <a 
                   href="/login" 
                   onClick={(e) => {
@@ -443,8 +397,7 @@ function LandingPage() {
                     fontWeight: '600',
                     padding: '8px 16px',
                     background: 'rgba(255,255,255,0.2)',
-                    borderRadius: '8px',
-                    transition: 'all 0.2s'
+                    borderRadius: '8px'
                   }}
                 >
                   {language === 'en' ? 'Sign In' : 'Iniciar Sesión'}
@@ -463,8 +416,7 @@ function LandingPage() {
                     fontWeight: '600',
                     padding: '8px 16px',
                     background: '#d4af37',
-                    borderRadius: '8px',
-                    transition: 'all 0.2s'
+                    borderRadius: '8px'
                   }}
                 >
                   {language === 'en' ? 'Sign Up' : 'Registrarse'}
@@ -478,7 +430,6 @@ function LandingPage() {
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             style={{
               display: 'none',
-              '@media (maxWidth: 768px)': { display: 'block' },
               background: 'rgba(255,255,255,0.2)',
               border: 'none',
               borderRadius: '8px',
@@ -506,7 +457,6 @@ function LandingPage() {
             flexDirection: 'column',
             gap: '12px'
           }}>
-            {/* Language Switcher Mobile */}
             <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
               <button
                 onClick={() => {
@@ -688,10 +638,9 @@ function LandingPage() {
         )}
       </header>
 
-      {/* Add CSS for mobile responsiveness */}
       <style>{`
         @media (max-width: 768px) {
-          header > div > div:nth-child(2):not(.mobile-menu-btn) {
+          .desktop-nav {
             display: none !important;
           }
           .mobile-menu-btn {
@@ -700,14 +649,13 @@ function LandingPage() {
         }
       `}</style>
 
-      {/* Hero Section with Carousel */}
+      {/* Hero Section */}
       <section style={{
         marginTop: '80px',
-        minHeight: '90vh',
+        minHeight: '70vh',
         position: 'relative',
         overflow: 'hidden'
       }}>
-        {/* Background Image Carousel */}
         <div style={{
           position: 'absolute',
           top: 0,
@@ -733,7 +681,6 @@ function LandingPage() {
               }}
             />
           ))}
-          {/* Dark overlay for text readability */}
           <div style={{
             position: 'absolute',
             top: 0,
@@ -744,11 +691,10 @@ function LandingPage() {
           }} />
         </div>
 
-        {/* Hero Content */}
         <div style={{
           position: 'relative',
           zIndex: 1,
-          minHeight: '90vh',
+          minHeight: '70vh',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -772,73 +718,56 @@ function LandingPage() {
             <p style={{
               fontSize: '20px',
               color: '#e9ded4',
-              margin: '0 0 16px 0',
+              margin: '0 0 40px 0',
               lineHeight: '1.6',
               textShadow: '1px 1px 4px rgba(0,0,0,0.5)'
             }}>
               {t.hero.subtitle}
             </p>
-
-            <p style={{
-              fontSize: '16px',
-              color: '#d4af37',
-              margin: '0 0 40px 0',
-              fontStyle: 'italic',
-              fontWeight: '500',
-              textShadow: '1px 1px 4px rgba(0,0,0,0.5)'
-            }}>
-              "{t.hero.tagline}"
-            </p>
             
-            <button
-              onClick={() => navigate(isAuthenticated() ? '/builder' : '/signup')}
-              style={{
-                background: 'linear-gradient(135deg, #d4af37, #f4d03f)',
-                color: '#1f1a17',
-                border: 'none',
-                borderRadius: '12px',
-                padding: '18px 48px',
-                fontSize: '18px',
-                fontWeight: '700',
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '12px',
-                boxShadow: '0 8px 24px rgba(212, 175, 55, 0.4)',
-                transition: 'transform 0.2s'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-              onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-            >
-              <Sparkles size={24} />
-              {t.hero.cta}
-              <ChevronRight size={24} />
-            </button>
+            <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => document.getElementById('products').scrollIntoView({ behavior: 'smooth' })}
+                style={{
+                  background: 'linear-gradient(135deg, #d4af37, #f4d03f)',
+                  color: '#1f1a17',
+                  border: 'none',
+                  borderRadius: '12px',
+                  padding: '18px 48px',
+                  fontSize: '18px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  boxShadow: '0 8px 24px rgba(212, 175, 55, 0.4)'
+                }}
+              >
+                <ShoppingBag size={24} />
+                {t.hero.cta}
+              </button>
 
-            {!isAuthenticated() && (
-              <p style={{
-                marginTop: '20px',
-                fontSize: '14px',
-                color: '#e9ded4',
-                textShadow: '1px 1px 4px rgba(0,0,0,0.5)'
-              }}>
-                {language === 'en' ? 'Already have an account?' : '¿Ya tienes una cuenta?'}{' '}
-                <a
-                  href="/login"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigate('/login');
-                  }}
-                  style={{
-                    color: '#d4af37',
-                    textDecoration: 'underline',
-                    fontWeight: '600'
-                  }}
-                >
-                  {language === 'en' ? 'Sign In' : 'Iniciar Sesión'}
-                </a>
-              </p>
-            )}
+              <button
+                onClick={handleCustomBuilder}
+                style={{
+                  background: 'rgba(255,255,255,0.2)',
+                  backdropFilter: 'blur(10px)',
+                  color: 'white',
+                  border: '2px solid white',
+                  borderRadius: '12px',
+                  padding: '18px 48px',
+                  fontSize: '18px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '12px'
+                }}
+              >
+                <Edit3 size={24} />
+                {t.hero.customBuilder}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -866,87 +795,17 @@ function LandingPage() {
                 transition: 'all 0.3s ease',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
               }}
-              aria-label={`Go to slide ${index + 1}`}
             />
           ))}
         </div>
-
-        {/* Navigation Arrows */}
-        <button
-          onClick={() => setCurrentImageIndex((prev) => (prev - 1 + heroImages.length) % heroImages.length)}
-          style={{
-            position: 'absolute',
-            left: '20px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            width: '50px',
-            height: '50px',
-            borderRadius: '50%',
-            border: '2px solid white',
-            background: 'rgba(255, 255, 255, 0.2)',
-            backdropFilter: 'blur(10px)',
-            color: 'white',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 2,
-            transition: 'all 0.3s ease'
-          }}
-          onMouseOver={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
-            e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-            e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
-          }}
-          aria-label="Previous image"
-        >
-          <ChevronLeft size={24} />
-        </button>
-
-        <button
-          onClick={() => setCurrentImageIndex((prev) => (prev + 1) % heroImages.length)}
-          style={{
-            position: 'absolute',
-            right: '20px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            width: '50px',
-            height: '50px',
-            borderRadius: '50%',
-            border: '2px solid white',
-            background: 'rgba(255, 255, 255, 0.2)',
-            backdropFilter: 'blur(10px)',
-            color: 'white',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 2,
-            transition: 'all 0.3s ease'
-          }}
-          onMouseOver={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
-            e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-            e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
-          }}
-          aria-label="Next image"
-        >
-          <ChevronRight size={24} />
-        </button>
       </section>
 
-      {/* Market Distinction */}
-      <section style={{
+      {/* Products Section */}
+      <section id="products" style={{
         background: '#f9f5f0',
         padding: '80px 32px'
       }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
           <h2 style={{
             fontSize: '42px',
             fontWeight: '700',
@@ -954,391 +813,441 @@ function LandingPage() {
             textAlign: 'center',
             margin: '0 0 16px 0'
           }}>
-            {t.distinction.title}
+            {t.products.title}
           </h2>
           
           <p style={{
             fontSize: '18px',
             color: '#8b7a6b',
             textAlign: 'center',
-            maxWidth: '800px',
-            margin: '0 auto 64px auto',
-            lineHeight: '1.6'
+            maxWidth: '700px',
+            margin: '0 auto 64px auto'
           }}>
-            {t.distinction.subtitle}
+            {t.products.subtitle}
           </p>
 
+          {/* Product Grid */}
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-            gap: '32px'
+            gap: '32px',
+            marginBottom: '48px'
           }}>
-            {/* Competitors */}
-            <div style={{
-              background: 'white',
-              borderRadius: '16px',
-              padding: '32px',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-              border: '2px solid #e0e0e0'
-            }}>
-              <h3 style={{
-                fontSize: '20px',
-                fontWeight: '600',
-                color: '#8b7a6b',
-                margin: '0 0 20px 0'
-              }}>
-                {t.distinction.competitors.title}
-              </h3>
-              {t.distinction.competitors.points.map((point, i) => (
-                <div key={i} style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '12px',
-                  marginBottom: '12px'
-                }}>
-                  <span style={{ color: '#e0e0e0', fontSize: '20px' }}>•</span>
-                  <p style={{ margin: 0, fontSize: '16px', color: '#8b7a6b', lineHeight: '1.5' }}>
-                    {point}
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            {/* Sikars Advantage */}
-            <div style={{
-              background: 'linear-gradient(135deg, #6a4f3a, #8a6a52)',
-              borderRadius: '16px',
-              padding: '32px',
-              boxShadow: '0 8px 24px rgba(106, 79, 58, 0.3)',
-              border: '2px solid #d4af37'
-            }}>
-              <h3 style={{
-                fontSize: '20px',
-                fontWeight: '600',
-                color: '#d4af37',
-                margin: '0 0 20px 0'
-              }}>
-                {t.distinction.sikars.title}
-              </h3>
-              {t.distinction.sikars.points.map((point, i) => (
-                <div key={i} style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '12px',
-                  marginBottom: '12px'
-                }}>
-                  <Check size={20} style={{ color: '#d4af37', flexShrink: 0, marginTop: '2px' }} />
-                  <p style={{ margin: 0, fontSize: '16px', color: 'white', lineHeight: '1.5' }}>
-                    {point}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* What Makes Us Different */}
-      <section style={{
-        background: 'white',
-        padding: '80px 32px'
-      }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <h2 style={{
-            fontSize: '42px',
-            fontWeight: '700',
-            color: '#6a4f3a',
-            textAlign: 'center',
-            margin: '0 0 16px 0'
-          }}>
-            {t.differentiation.title}
-          </h2>
-          
-          <p style={{
-            fontSize: '18px',
-            color: '#8b7a6b',
-            textAlign: 'center',
-            maxWidth: '800px',
-            margin: '0 auto 64px auto',
-            lineHeight: '1.6'
-          }}>
-            {t.differentiation.subtitle}
-          </p>
-
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: '32px'
-          }}>
-            {t.differentiation.features.map((feature, i) => (
-              <div key={i} style={{
-                background: '#f9f5f0',
-                borderRadius: '16px',
-                padding: '32px',
-                textAlign: 'center',
-                border: '2px solid #e0e0e0',
-                transition: 'transform 0.2s, box-shadow 0.2s'
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.transform = 'translateY(-4px)';
-                e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.1)';
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}>
-                <div style={{ fontSize: '48px', marginBottom: '16px' }}>
-                  {feature.icon}
-                </div>
-                <h3 style={{
-                  fontSize: '18px',
-                  fontWeight: '600',
-                  color: '#6a4f3a',
-                  margin: '0 0 12px 0'
-                }}>
-                  {feature.title}
-                </h3>
-                <p style={{
-                  fontSize: '14px',
-                  color: '#8b7a6b',
-                  margin: 0,
-                  lineHeight: '1.5'
-                }}>
-                  {feature.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Target Audience */}
-      <section style={{
-        background: 'linear-gradient(135deg, #f9f5f0 0%, #e9ded4 100%)',
-        padding: '80px 32px'
-      }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <h2 style={{
-            fontSize: '42px',
-            fontWeight: '700',
-            color: '#6a4f3a',
-            textAlign: 'center',
-            margin: '0 0 64px 0'
-          }}>
-            {t.audience.title}
-          </h2>
-
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-            gap: '24px'
-          }}>
-            {t.audience.segments.map((segment, i) => (
-              <div key={i} style={{
-                background: 'white',
-                borderRadius: '16px',
-                padding: '32px',
-                textAlign: 'center',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                border: '2px solid #e0e0e0'
-              }}>
-                <div style={{ fontSize: '40px', marginBottom: '16px' }}>
-                  {segment.isImage ? (
-                    <img 
-                      src={segment.icon} 
-                      alt={segment.title}
-                      style={{
-                        width: '60px',
-                        height: '60px',
-                        objectFit: 'contain',
-                        margin: '0 auto',
-                        display: 'block'
-                      }}
-                      onError={(e) => { e.target.style.display = 'none'; }}
-                    />
-                  ) : (
-                    segment.icon
-                  )}
-                </div>
-                <h3 style={{
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  color: '#6a4f3a',
-                  margin: '0 0 12px 0'
-                }}>
-                  {segment.title}
-                </h3>
-                <p style={{
-                  fontSize: '14px',
-                  color: '#8b7a6b',
-                  margin: 0,
-                  lineHeight: '1.5'
-                }}>
-                  {segment.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* User Experience Process */}
-      <section style={{
-        background: 'white',
-        padding: '80px 32px'
-      }}>
-        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-          <h2 style={{
-            fontSize: '42px',
-            fontWeight: '700',
-            color: '#6a4f3a',
-            textAlign: 'center',
-            margin: '0 0 16px 0'
-          }}>
-            {t.process.title}
-          </h2>
-          
-          <p style={{
-            fontSize: '18px',
-            color: '#8b7a6b',
-            textAlign: 'center',
-            maxWidth: '800px',
-            margin: '0 auto 64px auto',
-            lineHeight: '1.6'
-          }}>
-            {t.process.subtitle}
-          </p>
-
-          <div style={{ position: 'relative' }}>
-            {t.process.steps.map((step, i) => (
-              <div key={i} style={{
-                display: 'flex',
-                gap: '24px',
-                marginBottom: i < t.process.steps.length - 1 ? '48px' : 0,
-                position: 'relative'
-              }}>
-                {/* Step Number */}
+            {products.map((product) => (
+              <div
+                key={product.id}
+                style={{
+                  background: 'white',
+                  borderRadius: '16px',
+                  overflow: 'hidden',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  border: '2px solid #e0e0e0',
+                  transition: 'transform 0.2s, box-shadow 0.2s'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-8px)';
+                  e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.15)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+                }}
+              >
+                {/* Product Image */}
                 <div style={{
-                  width: '60px',
-                  height: '60px',
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #6a4f3a, #8a6a52)',
-                  color: 'white',
+                  background: 'linear-gradient(135deg, #f9f5f0 0%, #e9ded4 100%)',
+                  padding: '40px',
+                  textAlign: 'center',
+                  minHeight: '250px',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '24px',
-                  fontWeight: '700',
-                  flexShrink: 0,
-                  boxShadow: '0 4px 12px rgba(106, 79, 58, 0.3)',
-                  zIndex: 1
+                  justifyContent: 'center'
                 }}>
-                  {step.number}
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: '200px',
+                      objectFit: 'contain'
+                    }}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                    }}
+                  />
                 </div>
 
-                {/* Connecting Line */}
-                {i < t.process.steps.length - 1 && (
-                  <div style={{
-                    position: 'absolute',
-                    left: '30px',
-                    top: '60px',
-                    width: '2px',
-                    height: '48px',
-                    background: '#e0e0e0'
-                  }} />
-                )}
-
-                {/* Step Content */}
-                <div style={{ flex: 1 }}>
+                {/* Product Info */}
+                <div style={{ padding: '24px' }}>
                   <h3 style={{
-                    fontSize: '20px',
-                    fontWeight: '600',
+                    fontSize: '24px',
+                    fontWeight: '700',
                     color: '#6a4f3a',
                     margin: '0 0 8px 0'
                   }}>
-                    {step.title}
+                    {product.name}
                   </h3>
+
                   <p style={{
-                    fontSize: '16px',
+                    fontSize: '14px',
                     color: '#8b7a6b',
-                    margin: 0,
-                    lineHeight: '1.5'
+                    margin: '0 0 16px 0',
+                    minHeight: '40px'
                   }}>
-                    {step.description}
+                    {product.description}
                   </p>
+
+                  {/* Product Details */}
+                  <div style={{
+                    background: '#f9f5f0',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    marginBottom: '16px'
+                  }}>
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr',
+                      gap: '8px',
+                      fontSize: '12px'
+                    }}>
+                      <div>
+                        <strong style={{ color: '#6a4f3a' }}>Size:</strong>
+                        <div style={{ color: '#8b7a6b' }}>{product.details.size}</div>
+                      </div>
+                      <div>
+                        <strong style={{ color: '#6a4f3a' }}>Strength:</strong>
+                        <div style={{ color: '#8b7a6b' }}>{product.details.strength}</div>
+                      </div>
+                      <div>
+                        <strong style={{ color: '#6a4f3a' }}>Wrapper:</strong>
+                        <div style={{ color: '#8b7a6b' }}>{product.details.wrapper}</div>
+                      </div>
+                      <div>
+                        <strong style={{ color: '#6a4f3a' }}>Box:</strong>
+                        <div style={{ color: '#8b7a6b' }}>{product.details.box}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Price */}
+                  <div style={{
+                    fontSize: '32px',
+                    fontWeight: '700',
+                    color: '#6a4f3a',
+                    marginBottom: '16px'
+                  }}>
+                    ${product.price.toFixed(2)}
+                  </div>
+
+                  {/* Add to Cart Button */}
+                  <button
+                    onClick={() => handleAddToCart(product)}
+                    style={{
+                      width: '100%',
+                      padding: '14px',
+                      background: 'linear-gradient(135deg, #6a4f3a, #8a6a52)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '12px',
+                      fontSize: '16px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <Plus size={20} />
+                    {t.products.customize}
+                  </button>
                 </div>
               </div>
             ))}
           </div>
 
-          <div style={{ textAlign: 'center', marginTop: '48px' }}>
+          {/* Custom Builder CTA */}
+          <div style={{
+            textAlign: 'center',
+            padding: '48px',
+            background: 'linear-gradient(135deg, #6a4f3a, #8a6a52)',
+            borderRadius: '16px',
+            color: 'white'
+          }}>
+            <h3 style={{
+              fontSize: '28px',
+              fontWeight: '700',
+              margin: '0 0 16px 0'
+            }}>
+              {language === 'en' ? 'Want Complete Control?' : '¿Quieres Control Completo?'}
+            </h3>
+            <p style={{
+              fontSize: '16px',
+              margin: '0 0 24px 0',
+              opacity: 0.9
+            }}>
+              {language === 'en' 
+                ? 'Use our custom builder to create your perfect cigar from scratch'
+                : 'Usa nuestro constructor personalizado para crear tu cigarro perfecto desde cero'}
+            </p>
             <button
-              onClick={() => navigate('/builder')}
+              onClick={handleCustomBuilder}
               style={{
-                background: 'linear-gradient(135deg, #6a4f3a, #8a6a52)',
-                color: 'white',
+                padding: '16px 48px',
+                background: '#d4af37',
+                color: '#1f1a17',
                 border: 'none',
                 borderRadius: '12px',
-                padding: '16px 40px',
-                fontSize: '16px',
-                fontWeight: '600',
+                fontSize: '18px',
+                fontWeight: '700',
                 cursor: 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '8px'
+                gap: '12px'
               }}
             >
-              {language === 'en' ? 'Start Building' : 'Comenzar a Crear'}
-              <ChevronRight size={20} />
+              <Edit3 size={24} />
+              {language === 'en' ? 'Open Custom Builder' : 'Abrir Constructor Personalizado'}
             </button>
           </div>
         </div>
       </section>
 
-      {/* Brand Values */}
-      <section style={{
-        background: 'linear-gradient(135deg, #1f1a17 0%, #3d2f24 100%)',
-        padding: '80px 32px',
-        color: 'white'
-      }}>
-        <div style={{ maxWidth: '900px', margin: '0 auto', textAlign: 'center' }}>
-          <h2 style={{
-            fontSize: '42px',
-            fontWeight: '700',
-            color: '#d4af37',
-            margin: '0 0 24px 0'
-          }}>
-            {language === 'en' ? 'Brand Philosophy' : 'Filosofía de Marca'}
-          </h2>
-          
+      {/* Customization Modal */}
+      {customizationModal && selectedProduct && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 2000,
+          padding: '16px'
+        }}>
           <div style={{
-            background: 'rgba(255, 255, 255, 0.05)',
-            borderRadius: '16px',
-            padding: '48px',
-            border: '2px solid rgba(212, 175, 55, 0.3)'
+            background: 'white',
+            borderRadius: '24px',
+            padding: '32px',
+            maxWidth: '500px',
+            width: '100%',
+            maxHeight: '90vh',
+            overflowY: 'auto'
           }}>
-            <p style={{
-              fontSize: '24px',
-              fontWeight: '600',
-              color: '#d4af37',
-              margin: '0 0 16px 0',
-              fontStyle: 'italic'
+            <h2 style={{
+              fontSize: '28px',
+              fontWeight: '700',
+              color: '#6a4f3a',
+              margin: '0 0 8px 0'
             }}>
-              "{language === 'en' ? 'Heritage in Your Hands. Uniquely Yours.' : 'Herencia en tus manos. Únicamente tuyo.'}"
-            </p>
+              {t.customization.title}
+            </h2>
+            
             <p style={{
-              fontSize: '18px',
-              color: '#e9ded4',
-              margin: 0,
-              lineHeight: '1.6'
+              fontSize: '16px',
+              color: '#8b7a6b',
+              margin: '0 0 24px 0'
             }}>
-              {language === 'en' 
-                ? 'Every Sikars cigar embodies the rich tradition of Dominican tobacco craftsmanship, combined with your personal vision and style. From the fertile fields of Santiago to your hands, each cigar tells a unique story.'
-                : 'Cada cigarro Sikars encarna la rica tradición de la artesanía del tabaco dominicano, combinada con tu visión personal y estilo. Desde los campos fértiles de Santiago hasta tus manos, cada cigarro cuenta una historia única.'}
+              {selectedProduct.name}
             </p>
+
+            {/* Band Text */}
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '14px',
+                fontWeight: '600',
+                color: '#1f1a17',
+                marginBottom: '8px'
+              }}>
+                {t.customization.bandText}
+              </label>
+              <input
+                type="text"
+                value={customization.bandText}
+                onChange={(e) => setCustomization({
+                  ...customization,
+                  bandText: e.target.value.slice(0, 18)
+                })}
+                placeholder={t.customization.bandPlaceholder}
+                maxLength={18}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  fontSize: '16px',
+                  border: '2px solid #e0e0e0',
+                  borderRadius: '12px',
+                  fontFamily: 'inherit'
+                }}
+              />
+              <div style={{ fontSize: '12px', color: '#8b7a6b', marginTop: '4px' }}>
+                {customization.bandText.length}/18 {language === 'en' ? 'characters' : 'caracteres'}
+              </div>
+            </div>
+
+            {/* Engraving */}
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '14px',
+                fontWeight: '600',
+                color: '#1f1a17',
+                marginBottom: '8px'
+              }}>
+                {t.customization.engraving}
+              </label>
+              <input
+                type="text"
+                value={customization.engraving}
+                onChange={(e) => setCustomization({
+                  ...customization,
+                  engraving: e.target.value.slice(0, 20)
+                })}
+                placeholder={t.customization.engravingPlaceholder}
+                maxLength={20}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  fontSize: '16px',
+                  border: '2px solid #e0e0e0',
+                  borderRadius: '12px',
+                  fontFamily: 'inherit'
+                }}
+              />
+              <div style={{ fontSize: '12px', color: '#8b7a6b', marginTop: '4px' }}>
+                {customization.engraving.length}/20 {language === 'en' ? 'characters' : 'caracteres'}
+              </div>
+            </div>
+
+            {/* Quantity */}
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '14px',
+                fontWeight: '600',
+                color: '#1f1a17',
+                marginBottom: '8px'
+              }}>
+                {t.customization.quantity}
+              </label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <button
+                  onClick={() => setCustomization({
+                    ...customization,
+                    quantity: Math.max(1, customization.quantity - 1)
+                  })}
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    border: '2px solid #6a4f3a',
+                    background: 'white',
+                    color: '#6a4f3a',
+                    fontSize: '20px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  -
+                </button>
+                <span style={{
+                  fontSize: '20px',
+                  fontWeight: '600',
+                  minWidth: '40px',
+                  textAlign: 'center'
+                }}>
+                  {customization.quantity}
+                </span>
+                <button
+                  onClick={() => setCustomization({
+                    ...customization,
+                    quantity: customization.quantity + 1
+                  })}
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    border: '2px solid #6a4f3a',
+                    background: 'white',
+                    color: '#6a4f3a',
+                    fontSize: '20px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            {/* Total */}
+            <div style={{
+              padding: '16px',
+              background: '#f9f5f0',
+              borderRadius: '12px',
+              marginBottom: '24px'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '18px', fontWeight: '600', color: '#6a4f3a' }}>
+                  {t.customization.total}:
+                </span>
+                <span style={{ fontSize: '28px', fontWeight: '700', color: '#6a4f3a' }}>
+                  ${(selectedProduct.price * customization.quantity).toFixed(2)}
+                </span>
+              </div>
+            </div>
+
+            {/* Buttons */}
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={() => setCustomizationModal(false)}
+                style={{
+                  flex: 1,
+                  padding: '14px',
+                  background: 'white',
+                  color: '#6a4f3a',
+                  border: '2px solid #6a4f3a',
+                  borderRadius: '12px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                {t.customization.cancel}
+              </button>
+              <button
+                onClick={handleProceedToCheckout}
+                style={{
+                  flex: 2,
+                  padding: '14px',
+                  background: 'linear-gradient(135deg, #d4af37, #f4d03f)',
+                  color: '#1f1a17',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontSize: '16px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}
+              >
+                <ChevronRight size={20} />
+                {t.customization.proceedToCheckout}
+              </button>
+            </div>
           </div>
         </div>
-      </section>
+      )}
 
       {/* Footer */}
       <footer style={{
@@ -1353,7 +1262,7 @@ function LandingPage() {
           margin: '0 0 24px 0',
           color: '#d4af37'
         }}>
-          {t.footer.tagline}
+          {language === 'en' ? 'Heritage in Your Hands. Uniquely Yours.' : 'Herencia en tus manos. Únicamente tuyo.'}
         </h3>
         
         <div style={{
@@ -1364,7 +1273,7 @@ function LandingPage() {
           flexWrap: 'wrap'
         }}>
           <a href="/builder" style={{ color: 'white', textDecoration: 'none', fontSize: '14px' }}>
-            {language === 'en' ? 'Builder' : 'Constructor'}
+            {language === 'en' ? 'Custom Builder' : 'Constructor'}
           </a>
           {isAuthenticated() ? (
             <>

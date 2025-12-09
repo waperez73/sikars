@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
@@ -20,7 +19,6 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   // Load user from localStorage on mount
   useEffect(() => {
@@ -38,12 +36,12 @@ export const AuthProvider = ({ children }) => {
             setUser(JSON.parse(storedUser));
           } else {
             // Token invalid, clear storage
-            logout();
+            clearAuth();
           }
         }
       } catch (error) {
         console.error('Error loading user:', error);
-        logout();
+        clearAuth();
       } finally {
         setLoading(false);
       }
@@ -70,6 +68,24 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Set auth data (used by Login component after successful login)
+  const setAuth = (userData, authToken) => {
+    localStorage.setItem('authToken', authToken);
+    localStorage.setItem('user', JSON.stringify(userData));
+    setToken(authToken);
+    setUser(userData);
+    console.log('✅ Auth state updated:', userData);
+  };
+
+  // Clear auth data
+  const clearAuth = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    sessionStorage.removeItem('rememberMe');
+    setToken(null);
+    setUser(null);
+  };
+
   // Login function
   const login = async (email, password) => {
     try {
@@ -84,13 +100,8 @@ export const AuthProvider = ({ children }) => {
       const data = await response.json();
 
       if (response.ok) {
-        // Store token and user
-        localStorage.setItem('authToken', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        
-        setToken(data.token);
-        setUser(data.user);
-
+        // Store token and user using setAuth
+        setAuth(data.user, data.token);
         return { success: true, data };
       } else {
         return { success: false, error: data.message || 'Login failed' };
@@ -116,12 +127,8 @@ export const AuthProvider = ({ children }) => {
 
       if (response.ok) {
         // Optionally auto-login after registration
-        if (data.token) {
-          localStorage.setItem('authToken', data.token);
-          localStorage.setItem('user', JSON.stringify(data.user));
-          
-          setToken(data.token);
-          setUser(data.user);
+        if (data.token && data.user) {
+          setAuth(data.user, data.token);
         }
 
         return { success: true, data };
@@ -134,7 +141,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Logout function
+  // Logout function (caller should handle navigation)
   const logout = async () => {
     try {
       // Optionally call backend logout endpoint
@@ -151,15 +158,7 @@ export const AuthProvider = ({ children }) => {
       console.error('Logout error:', error);
     } finally {
       // Clear local storage and state
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
-      sessionStorage.removeItem('rememberMe');
-      
-      setToken(null);
-      setUser(null);
-
-      // Redirect to login
-      navigate('/login');
+      clearAuth();
     }
   };
 
@@ -189,12 +188,13 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     updateUser,
-    getAuthHeader
+    getAuthHeader,
+    setAuth  // ← New function for direct auth updates
   };
 
   return (
     <AuthContext.Provider value={value}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
