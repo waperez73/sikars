@@ -170,6 +170,7 @@ CREATE TABLE order_items (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+
 -- ============================================
 -- PAYMENTS
 -- ============================================

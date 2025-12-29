@@ -125,6 +125,23 @@ function optionalAuthMiddleware(req, res, next) {
   }
 }
 
+// New: Optional auth (doesn't fail if no token)
+exports.optionalAuth = (req, res, next) => {
+  try {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    
+    if (token) {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = decoded;
+    }
+    
+    next(); // Continue even without token
+  } catch (error) {
+    // Invalid token, but continue anyway
+    next();
+  }
+};
+
 // Export the middleware function as default export
 module.exports = authMiddleware;
 

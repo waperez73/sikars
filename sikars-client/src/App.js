@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { CartProvider } from './context/CartContext'; // NEW
 
 // Import pages
 import LandingPage from './pages/LandingPage';
@@ -14,17 +15,23 @@ import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import UserProfile from './pages/UserProfile';
 import EmailVerification from './pages/EmailVerification';
+import Cart from './pages/Cart'; // NEW
+import Products from './pages/Products'; // NEW
+import ProductDetail from './pages/ProductDetail'; // NEW
 
 function App() {
   return (
     <Router>
       <AuthProvider>
+        <CartProvider> {/* NEW - Wrap inside Router but after AuthProvider */}
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/cart" element={<Cart />} /> {/* NEW */}
+            <Route path="/products" element={<Products />} /> {/* NEW */}
+            <Route path="/products/:slug" element={<ProductDetail />} /> {/* NEW */}
           {/* Semi-Protected Routes (can access as guest but better with auth) */}
           <Route path="/builder" element={<Builder />} />
           
@@ -72,16 +79,17 @@ function App() {
               </ProtectedRoute>
             } 
           />
-
           <Route 
             path="/verify-email/:token" 
             element={<EmailVerification />} 
           />
           {/* 404 Page */}
           <Route path="*" element={<NotFound />} />
-        </Routes>
+        </Routes>                        
+        </CartProvider>        
       </AuthProvider>
-    </Router>
+      </Router>
+      
   );
 }
 

@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Check, Package, Sparkles, User, ShoppingBag,
 import { useAuth } from '../context/AuthContext';
 import enTranslations from '../languages/en';
 import spTranslations from '../languages/sp';
+import { useCart } from '../context/CartContext'; // Add to imports
 
 const TRANSLATIONS = { en: enTranslations, sp: spTranslations };
 
@@ -48,6 +49,9 @@ const BASE_PRICE = 30;
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 function Builder() {
+  const { addCustomCigar } = useCart(); // Add this
+  const [addingToCart, setAddingToCart] = useState(false);
+
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -190,39 +194,15 @@ function Builder() {
     }
   };
 
-  const handleCheckout = () => {
+  const handleAddToCart = async () => {
     if (!selections.age21) {
       alert(t.confirmAge);
       return;
     }
 
-    // Check if user is authenticated
-    if (!isAuthenticated()) {
-      // Save order data to localStorage
-      const orderData = {
-        size: selections.size,
-        box: selections.box,
-        binder: selections.binder,
-        flavor: selections.flavor,
-        bandStyle: selections.bandStyle,
-        engraving: selections.engraving,
-        bandText: selections.bandText,
-        quantity: selections.quantity,
-        price: calculatePrice(),
-        currency: 'USD'
-      };
-      localStorage.setItem('pendingOrder', JSON.stringify(orderData));
-      
-      // Redirect to signup/login with message
-      alert(language === 'en' 
-        ? 'Please sign in or create an account to complete your order.'
-        : 'Por favor inicia sesión o crea una cuenta para completar tu pedido.');
-      navigate('/signup');
-      return;
-    }
+    setAddingToCart(true);
 
-    // Navigate to payment page with order data
-    const orderData = {
+    const customization = {
       size: selections.size,
       box: selections.box,
       binder: selections.binder,
@@ -230,17 +210,21 @@ function Builder() {
       bandStyle: selections.bandStyle,
       engraving: selections.engraving,
       bandText: selections.bandText,
-      quantity: selections.quantity,
-      price: calculatePrice(),
-      currency: 'USD'
+      quantity: selections.quantity
     };
 
-    // Store order data in localStorage for the payment page to access
-    localStorage.setItem('orderData', JSON.stringify(orderData));
+    const result = await addCustomCigar(customization);
     
-    // Navigate to payment page
-    navigate('/payment');
+    setAddingToCart(false);
+
+    if (result.success) {
+      alert('Added to cart!');
+      navigate('/cart');
+    } else {
+      alert('Failed to add to cart: ' + result.error);
+    }
   };
+
 
   const progress = ((currentStep - 1) / (STEPS.length - 1)) * 100;
 
@@ -1419,29 +1403,24 @@ function Builder() {
             </button>
           ) : (
             <button
-              onClick={handleCheckout}
-              disabled={!selections.age21}
-              style={{
-                flex: 1,
-                padding: '14px',
-                borderRadius: '12px',
-                border: 'none',
-                background: selections.age21 
-                  ? 'linear-gradient(135deg, #d4af37, #f4d03f)' 
-                  : '#ccc',
-                color: selections.age21 ? '#1f1a17' : '#666',
-                fontSize: '16px',
-                fontWeight: '700',
-                cursor: selections.age21 ? 'pointer' : 'not-allowed',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '4px'
-              }}
-            >
-              {t.proceedToPayment}
-              <ChevronRight size={20} />
-            </button>
+    onClick={handleAddToCart}
+    disabled={!selections.age21 || addingToCart}
+    style={{
+      flex: 1,
+      padding: '14px',
+      borderRadius: '12px',
+      border: 'none',
+      background: selections.age21 && !addingToCart
+        ? 'linear-gradient(135deg, #d4af37, #f4d03f)' 
+        : '#ccc',
+      color: selections.age21 && !addingToCart ? '#1f1a17' : '#666',
+      fontSize: '16px',
+      fontWeight: '700',
+      cursor: selections.age21 && !addingToCart ? 'pointer' : 'not-allowed'
+    }}
+  >
+    {addingToCart ? 'Adding...' : t.addToCart || 'Add to Cart'}
+  </button>
           )}
         </div>
       </div>

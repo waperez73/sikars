@@ -5,6 +5,8 @@ const cors = require('cors');
 const authRoutes = require('../src/routes/authRoutes');
 const userRoutes = require('../src/routes/userRoutes');
 const orderRoutes = require('../src/routes/orderRoutes');
+const productRoutes = require('./routes/productRoutes'); // NEW
+const cartRoutes = require('./routes/cartRoutes'); // NEW
 
 const app = express();
 
@@ -27,6 +29,8 @@ app.use((req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/products', productRoutes); // NEW
+app.use('/api/cart', cartRoutes); // NEW
 
 // Health check
 app.get('/api/health', (req, res) => {
